@@ -2,7 +2,7 @@
 #include "proj1.h"
 
 
-void checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
+int checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
     int n=0;
     for(int i=0; i<ROWS; i++){
         for(int j=0; j<COLS; j++){
@@ -17,6 +17,7 @@ void checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
             }
         }
     }
+    return n;
 }
 
 
@@ -57,31 +58,34 @@ _Bool checkTrapped(_Bool player, Coord empty, Coord enemy){ //checks if the enem
     }
 }
 
-void exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the allEnemies[] array
+int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the allEnemies[] array
     int n = 0;
     for(int i=-1; i<=1; i++){ //checks if we don't cross the matrix's borders
-       if(move.x+i>=ROWS || move.x+i<0){
-           continue;
-       }
-       for(int j=-1; j<=1; j++){
-           if(move.y+j>=COLS|| move.y+j<0){
-                continue;
-            }
-            if(board[move.x+i][move.y+j] == !player){
-            	Coord enemy;
-            	enemy.x = i;
-            	enemy.y = j;
-                if(checkTrapped(player,move,enemy)){ //checks if the enemies are trapped, and, if so, stores the coordinates' differences from the move in the allEnemies array
-                    allEnemies[n] = enemy;
-                    n++;
-                }
-            }
-       }
+		if(move.x+i>=ROWS || move.x+i<0){
+		   continue;
+		}
+		for(int j=-1; j<=1; j++){
+		   if(move.y+j>=COLS|| move.y+j<0){
+				continue;
+			}
+			if(board[move.x+i][move.y+j] == !player){
+				Coord enemy;
+				enemy.x = i;
+				enemy.y = j;
+				if(checkTrapped(player,move,enemy)){ //checks if the enemies are trapped, and, if so, stores the coordinates' differences from the move in the allEnemies array
+					allEnemies[n] = enemy;
+					n++;
+				}
+			}
+		}
     }
+    return n;
 }
 
-void theConverter(Coord direction, Coord move, _Bool player){ //converts the trapped enemy's pieces to player's pieces
-    do{
+int theConverter(Coord direction, Coord move, _Bool player){ //converts the trapped enemy's pieces to player's pieces
+    int nEnemies = 0;
+	do{
+		nEnemies++;
         board[move.x][move.y] = player; //follows the enemy's direction until it reaches player's piece and convert all the pieces in between
         move.x += direction.x;
         move.y += direction.y;
@@ -89,7 +93,7 @@ void theConverter(Coord direction, Coord move, _Bool player){ //converts the tra
             break;
         }
     }while(board[move.x][move.y] == !player);
-
+	return nEnemies;
 }
 
 void resetArray(Coord array[], int size){ //cleans the allEnemies[] array

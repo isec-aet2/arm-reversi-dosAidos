@@ -27,6 +27,8 @@
 #include "stm32f769i_discovery.h"
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
+#include "proj1.h"
+#include "ai.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +47,8 @@
 #define SQSIZE					50
 #define CIRRAD					20
 #define BORDER					50
+#define STRSIZE				   100
+#define MENUSIZE				 2
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,13 +72,17 @@ SDRAM_HandleTypeDef hsdram1;
 /* USER CODE BEGIN PV */
 int timCount = 0;
 _Bool timFlag = 0;
+
 _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 TS_StateTypeDef TS_State;
+
 int board[ROWS][COLS];
 _Bool player = PL1;
 Coord pass;
 Coord move;
+
+char menuOpt[MENUSIZE][STRSIZE] = {"Play against AI","Play against NI"};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -163,12 +171,20 @@ void printBoard(){
 	}
 }
 
-void selectSq(Move move){
+void printMenu(){
+	for(int i=0; i<MENUSIZE; i++){
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+		BSP_LCD_ClearStringLine(2*i);
+		BSP_LCD_DisplayStringAtLine(2*i, (uint8_t *)menuOpt[i]);
+	}
+}
+
+void selectSq(Coord move){
 	BSP_LCD_SetTextColor(LCD_COLOR_DARKGRAY);
 	BSP_LCD_FillRect(toIndex(move.x), toIndex(move.y), SQSIZE, SQSIZE);
 }
 
-void deselectSq(Move move){
+void deselectSq(Coord move){
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_FillRect(toIndex(move.x), toIndex(move.y), SQSIZE, SQSIZE);
 }
@@ -215,10 +231,14 @@ void checkTIM(){
   */
 int main(void)
 {
+
+
   /* USER CODE BEGIN 1 */
   uint32_t ConvertedValue;
   long int JTemp;
-  char desc[100];
+  char desc[STRSIZE];
+
+  srand(time(NULL));
   /* USER CODE END 1 */
   
 

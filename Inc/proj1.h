@@ -26,11 +26,11 @@ typedef struct _coord{
 
 #endif
 
-void checkAllMoves(_Bool player, Coord avail[]);
+int checkAllMoves(_Bool player, Coord avail[]);
 _Bool checkEnemies(_Bool player, Coord empty);
 _Bool checkTrapped(_Bool player, Coord empty, Coord enemy);
-void exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]);
-void theConverter(Coord direction, Coord move, _Bool player);
+int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]);
+int theConverter(Coord direction, Coord move, _Bool player);
 void resetArray(Coord array[], int size);
 _Bool checkAvail(Coord move, Coord avail[]);
 void proj1Main(_Bool player);
