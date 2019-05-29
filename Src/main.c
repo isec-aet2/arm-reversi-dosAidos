@@ -24,11 +24,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
+#include "time.h"
+#include "stdlib.h"
 #include "stm32f769i_discovery.h"
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
-#include "proj1.h"
-#include "ai.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +49,22 @@
 #define BORDER					50
 #define STRSIZE				   100
 #define MENUSIZE				 2
+#define TIMEOUTSEC				20
+#define TIMEOUTMAX				 3
+#define CLCKCNTRX				70
+#define CLCKCNTRY				70
+#define CLCKRAD					70
+#define CLCKNOSE				 3
+#define ROWS 					 8
+#define COLS 					 8
+#define NOCOORD 				-2
+#define EMPTY					-1
+#define PL1						 0
+#define PL2						 1
+#define E1						 2
+#define E2						 3
+#define TRUE 					 1
+#define FALSE 					 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -77,6 +93,10 @@ _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 TS_StateTypeDef TS_State;
 
+int timeout[] = {0,0};
+
+_Bool pushFlag = 0;
+
 int board[ROWS][COLS];
 _Bool player = PL1;
 Coord pass;
@@ -104,11 +124,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 	if(htim -> Instance == TIM6){
 		timCount++;
 		timFlag = 1;
+		BSP_LED_Toggle(LED1);
 	}
 }
 
 void HAL_GPIO_EXIT_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin==GPIO_PIN_13){
+		BSP_LED_Toggle(LED2);
 		BSP_TS_GetState(&TS_State);
 		HAL_Delay(100);
 		if(TS_State.touchDetected){
@@ -118,7 +140,21 @@ void HAL_GPIO_EXIT_Callback(uint16_t GPIO_Pin){
 	}
 }
 
-/*int toPos(int index){
+
+
+/*
+ * void analogClock(int colour){
+	BSP_LCD_SetTextColor(colour);
+	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
+	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE)
+}
+
+void printCountdown(int sec, int colour){
+	int angle = TIMEOUTSEC/sec;
+	BSP_LCD_SetTextColor(colour);
+	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, x2, y2);
+}
+ * int toPos(int index){
 	return SQSIZE*index+BORDER;
 }
 
@@ -282,6 +318,8 @@ int main(void)
   BSP_TS_Init(800, 480);
   BSP_TS_ITConfig();
 
+  BSP_LED_Init(LED1);
+  BSP_LED_Init(LED2);
   //resetBoard();
   //printBoard();
 

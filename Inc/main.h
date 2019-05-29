@@ -23,10 +23,19 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-
+#define ROWS 					 8
+#define COLS 					 8
+#define NOCOORD 				-2
+#define EMPTY					-1
+#define PL1						 0
+#define PL2						 1
+#define E1						 2
+#define E2						 3
+#define TRUE 					 1
+#define FALSE 					 0
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
-#include "proj1.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -41,6 +50,12 @@ typedef struct _coord{
 	int x;
 	int y;
 }Coord;
+
+typedef struct _game{
+	int number;
+	_Bool winner;
+	int time;
+}Game;
 
 #endif
 /* USER CODE END ET */
