@@ -49,11 +49,11 @@
 #define VSENS_AT_AMBIENT_TEMP  760
 #define AVG_SLOPE               25
 #define VREF                  3300
-#define SQSIZE					50
+#define SQSIZE					55
 #define CIRRAD					20
-#define BORDER					50
+#define BORDER					  (LCDYMAX-SQSIZE*ROWS)/2
 #define STRSIZE				   100
-#define MENUSIZE				 2
+#define MENUSIZE				 3
 #define ELIPSEX				   150
 #define ELIPSEY				    30
 #define MFONT				Font24
@@ -64,6 +64,8 @@
 #define BUTTONTXTCLR			  LCD_COLOR_LIGHTYELLOW
 #define PRESSEDBUTTONCLR		  LCD_COLOR_BLACK
 #define PRESSEDBUTTONTXTCLR		  LCD_COLOR_GRAY
+#define SELECTEDCLR				  LCD_COLOR_DARKGRAY
+#define SELECTEDDIF			 	  SQSIZE/5
 #define LCDXCENTRE				  BSP_LCD_GetXSize()/2
 #define LCDYMAX					  BSP_LCD_GetYSize()
 #define TIMEOUTSEC				20
@@ -82,8 +84,12 @@
 #define E2						 3
 #define TRUE 					 1
 #define FALSE 					 0
-
-
+#define PL1CLR					  LCD_COLOR_LIGHTMAGENTA
+#define PL2CLR					  LCD_COLOR_CYAN
+#define E1CLR					  LCD_COLOR_DARKMAGENTA
+#define E2CLR					  LCD_COLOR_DARKCYAN
+#define BOARDCLR				  LCD_COLOR_BLACK
+#define GRIDCLR					  LCD_COLOR_WHITE
 
 /* USER CODE END PD */
 
@@ -136,11 +142,12 @@ State mode = MENU;
 int board[ROWS][COLS];
 _Bool player = PL1;
 Coord touch;
+Coord prev;
 int btn;
 //Coord pass;
 //Coord move;
 
-char menuOpt[MENUSIZE][STRSIZE] = {"Play against AI","Play against NI"};
+char menuOpt[MENUSIZE][STRSIZE] = {"Resume game","Play against AI","Play against NI"};
 
 uint32_t ConvertedValue;
 	long int JTemp;
@@ -152,9 +159,9 @@ uint32_t ConvertedValue;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA2D_Init(void);
+static void MX_DSIHOST_DSI_Init(void);
 static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
-static void MX_DSIHOST_DSI_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
@@ -177,6 +184,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		if(TS_State.touchDetected){
 			tsFlag = 1;
 		}
+	}
+	if(GPIO_Pin == GPIO_PIN_0){
+		mode = MENU;
 	}
 }
 
@@ -202,12 +212,12 @@ void printCountdown(int sec, int colour){
 	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY+catY);
 }
 
-double toPos(int index){
-	return (double)SQSIZE*index+BORDER;
+int toPos(int index){
+	return SQSIZE*index+BORDER;
 }
 
-int toIndex(double pos){
-	return (int)(pos-BORDER)/SQSIZE;
+int toIndex(int pos){
+	return (pos-BORDER)/SQSIZE;
 }
 
 int toButton(int posY){
@@ -236,23 +246,23 @@ void printBoard(){
 			  BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 			  BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
 			  if(board[i][j]==PL1){
-				  BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
+				  BSP_LCD_SetTextColor(PL1CLR);
 				  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 				  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 				  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
 			  }
 			  if(board[i][j]==PL2){
-				  BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
+				  BSP_LCD_SetTextColor(PL2CLR);
 				  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 				  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 				  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
 			  }
 			  if(board[i][j]==E1){
-				  BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
+				  BSP_LCD_SetTextColor(E1CLR);
 				  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 			  }
 			  if(board[i][j]==E2){
-				  BSP_LCD_SetTextColor(LCD_COLOR_DARKCYAN);
+				  BSP_LCD_SetTextColor(E2CLR);
 				  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 			  }
 		  }
@@ -260,13 +270,26 @@ void printBoard(){
 }
 
 void selectSq(Coord sq){
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKGRAY);
-	BSP_LCD_FillRect(toIndex(sq.x), toIndex(sq.y), SQSIZE, SQSIZE);
-}
-
-void deselectSq(Coord sq){
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-	BSP_LCD_FillRect(toIndex(sq.x), toIndex(sq.y), SQSIZE, SQSIZE);
+	BSP_LCD_SetTextColor(SELECTEDCLR);
+	BSP_LCD_FillRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
+	BSP_LCD_SetTextColor(GRIDCLR);
+	BSP_LCD_DrawRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
+	if(board[sq.x][sq.y]!=EMPTY){
+		switch(board[sq.x][sq.y]){
+			case PL1:
+				BSP_LCD_SetTextColor(PL1CLR);
+				break;
+			case PL2:
+				BSP_LCD_SetTextColor(PL2CLR);
+				break;
+			case E1:
+				BSP_LCD_SetTextColor(E1CLR);
+				break;
+			case E2:
+				BSP_LCD_SetTextColor(E2CLR);
+		}
+	BSP_LCD_FillCircle(toPos(sq.x)+SQSIZE/2.0, toPos(sq.y)+SQSIZE/2.0, CIRRAD);
+	}
 }
 
 void colourButton(int btn, int btnClr, int txtClr){
@@ -312,22 +335,34 @@ void checkMenuTS(){
 void checkGameTS(){
 	if(tsFlag){
 		tsFlag = 0;
-		deselectSq(touch);
 		touch.x = toIndex(TS_State.touchX[0]);
 		touch.y = toIndex(TS_State.touchY[0]);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
-			if(tsFlag){
-				tsFlag = 0;
-				selectSq(touch);
-				HAL_Delay(11);
-				dsFlag = 1;
-			}else if(dsFlag){
-				dsFlag = 0;
-				board[touch.x][touch.y] = player;
-				player = !player;
+			if(touch.x!=prev.x || touch.y!=prev.y){
 				printBoard();
+				selectSq(touch);
+				dsFlag = 1;
+				prev.x = touch.x;
+				prev.y = touch.y;
 			}
+
 		}
+		HAL_Delay(TOUCHDELAY+100);
+		/*	tsFlag = 0;
+			selectSq(touch);
+			dsFlag = 1;
+			btnLeft = 1;
+		}else if(btnLeft){
+			btnLeft = 0;
+			printBoard();
+			dsFlag = 0;
+		}*/
+		//HAL_Delay(TOUCHDELAY);
+	}else if(dsFlag){
+		dsFlag = 0;
+		board[touch.x][touch.y] = player;
+		player = !player;
+		printBoard();
 	}
 }
 
@@ -356,9 +391,8 @@ void checkTIM(){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
-
 	srand(time(NULL));
+
 	//uint32_t JTemp;
 	//char tempString[100];
 	//char tsString[20];
@@ -391,9 +425,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA2D_Init();
+  MX_DSIHOST_DSI_Init();
   MX_FMC_Init();
   MX_LTDC_Init();
-  MX_DSIHOST_DSI_Init();
   MX_TIM6_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
@@ -410,9 +444,9 @@ int main(void)
   HAL_ADC_Start_IT(&hadc1);
 
   //printBoard(boardX0, boardY0 , DIMENSION, boardPlaceWidth, boardPlaceHeight);
-  //resetBoard();
-  //printBoard();
-  printMenu();
+  resetBoard();
+  printBoard();
+  //printMenu();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -421,11 +455,10 @@ int main(void)
   {
 
     /* USER CODE END WHILE */
-	 //checkTIM();
-	 //checkTS();
+
     /* USER CODE BEGIN 3 */
 
-	  checkMenuTS();
+	  checkGameTS();
 
   }
   /* USER CODE END 3 */
@@ -514,14 +547,14 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -530,7 +563,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -866,13 +899,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOI_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOJ_CLK_ENABLE();
 
   /*Configure GPIO pin : PI13 */
@@ -881,7 +915,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
