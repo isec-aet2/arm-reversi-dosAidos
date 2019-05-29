@@ -23,12 +23,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "stdio.h"
-#include "time.h"
 #include "stdlib.h"
+#include "time.h"
+#include "math.h"
 #include "stm32f769i_discovery.h"
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
+//#include "proj1.h"
+//#include "ai.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,6 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 #define TEMP_REFRESH_PERIOD    250
 #define MAX_CONVERTED_VALUE   4095
 #define AMBIENT_TEMP            25
@@ -49,6 +54,18 @@
 #define BORDER					50
 #define STRSIZE				   100
 #define MENUSIZE				 2
+#define ELIPSEX				   150
+#define ELIPSEY				    30
+#define MFONT				Font24
+#define MFONTSIZE				24
+#define TOUCHDELAY				12
+#define BCKGND					  LCD_COLOR_WHITE
+#define BUTTONCLR				  LCD_COLOR_DARKMAGENTA
+#define BUTTONTXTCLR			  LCD_COLOR_LIGHTYELLOW
+#define PRESSEDBUTTONCLR		  LCD_COLOR_BLACK
+#define PRESSEDBUTTONTXTCLR		  LCD_COLOR_GRAY
+#define LCDXCENTRE				  BSP_LCD_GetXSize()/2
+#define LCDYMAX					  BSP_LCD_GetYSize()
 #define TIMEOUTSEC				20
 #define TIMEOUTMAX				 3
 #define CLCKCNTRX				70
@@ -65,6 +82,9 @@
 #define E2						 3
 #define TRUE 					 1
 #define FALSE 					 0
+
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -86,32 +106,55 @@ TIM_HandleTypeDef htim6;
 SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
+#ifndef _Coord_
+#define _Coord_
+
+typedef struct _coord{
+	int x;
+	int y;
+}Coord;
+
+typedef struct _game{
+	int number;
+	_Bool winner;
+	int time;
+}Game;
+#endif
+
+typedef enum _state {MENU,GAME} State;
+
 int timCount = 0;
 _Bool timFlag = 0;
 
 _Bool tsFlag = 0;
 _Bool dsFlag = 0;
+_Bool btnLeft = 0;
+//_Bool tdsFlag = 0;
 TS_StateTypeDef TS_State;
 
-int timeout[] = {0,0};
-
-_Bool pushFlag = 0;
-
+State mode = MENU;
 int board[ROWS][COLS];
 _Bool player = PL1;
-Coord pass;
-Coord move;
+Coord touch;
+int btn;
+//Coord pass;
+//Coord move;
 
 char menuOpt[MENUSIZE][STRSIZE] = {"Play against AI","Play against NI"};
+
+uint32_t ConvertedValue;
+	long int JTemp;
+	char desc[STRSIZE];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA2D_Init(void);
-static void MX_DSIHOST_DSI_Init(void);
 static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
+static void MX_DSIHOST_DSI_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
@@ -120,46 +163,55 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 	if(htim -> Instance == TIM6){
 		timCount++;
 		timFlag = 1;
-		BSP_LED_Toggle(LED1);
 	}
 }
 
-void HAL_GPIO_EXIT_Callback(uint16_t GPIO_Pin){
-	if(GPIO_Pin==GPIO_PIN_13){
-		BSP_LED_Toggle(LED2);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == GPIO_PIN_13){
 		BSP_TS_GetState(&TS_State);
-		HAL_Delay(100);
 		if(TS_State.touchDetected){
 			tsFlag = 1;
-			dsFlag = 1;
 		}
 	}
 }
 
-
-
-/*
- * void analogClock(int colour){
+void analogClock(int colour){
+	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
 	BSP_LCD_SetTextColor(colour);
 	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
-	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE)
+	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE);
 }
 
 void printCountdown(int sec, int colour){
-	int angle = TIMEOUTSEC/sec;
+	int angle = 360*sec/TIMEOUTSEC;
+	int catX = CLCKRAD*(int)sin(angle);
+	int catY = CLCKRAD*(int)cos(angle);
+	if(angle>180){
+		catX *= -1;
+	}
+	if(angle>90 && angle<270){
+		catY *= -1;
+	}
 	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, x2, y2);
-}
- * int toPos(int index){
-	return SQSIZE*index+BORDER;
+	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY+catY);
 }
 
-int toIndex(int pos){
-	return (pos-BORDER)/SQSIZE;
+double toPos(int index){
+	return (double)SQSIZE*index+BORDER;
+}
+
+int toIndex(double pos){
+	return (int)(pos-BORDER)/SQSIZE;
+}
+
+int toButton(int posY){
+	return posY*MENUSIZE/LCDYMAX;
 }
 
 void resetBoard(){
@@ -177,69 +229,105 @@ void resetBoard(){
 }
 
 void printBoard(){
+	  for(int i=0; i<ROWS; i++){
+		  for(int j=0; j<COLS; j++){
+			  BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+			  BSP_LCD_FillRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+			  BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+			  BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+			  if(board[i][j]==PL1){
+				  BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
+				  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+				  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+				  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
+			  }
+			  if(board[i][j]==PL2){
+				  BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
+				  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+				  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+				  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
+			  }
+			  if(board[i][j]==E1){
+				  BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
+				  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+			  }
+			  if(board[i][j]==E2){
+				  BSP_LCD_SetTextColor(LCD_COLOR_DARKCYAN);
+				  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+			  }
+		  }
+	  }
+}
+
+void selectSq(Coord sq){
+	BSP_LCD_SetTextColor(LCD_COLOR_DARKGRAY);
+	BSP_LCD_FillRect(toIndex(sq.x), toIndex(sq.y), SQSIZE, SQSIZE);
+}
+
+void deselectSq(Coord sq){
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-	BSP_LCD_FillRect(toPos(0), toPos(0), SQSIZE*ROWS, SQSIZE*COLS);
-	for(int i=0; i<ROWS; i++){
-		for(int j=0; j<COLS; j++){
-			BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-			BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
-			if(board[i][j]==PL1){
-				BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
-				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-				//BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-				//BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
-			}
-			if(board[i][j]==PL2){
-				BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
-				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-				//BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-				//BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
-			}
-			if(board[i][j]==E1){
-				BSP_LCD_SetTextColor(LCD_COLOR_DARKMAGENTA);
-				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-			}
-			if(board[i][j]==E2){
-				BSP_LCD_SetTextColor(LCD_COLOR_DARKCYAN);
-				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-			}
-		}
-	}
+	BSP_LCD_FillRect(toIndex(sq.x), toIndex(sq.y), SQSIZE, SQSIZE);
+}
+
+void colourButton(int btn, int btnClr, int txtClr){
+	BSP_LCD_SetTextColor(btnClr);
+	BSP_LCD_FillEllipse(LCDXCENTRE, LCDYMAX/(MENUSIZE+1)*(btn+1), ELIPSEX, ELIPSEY);
+	BSP_LCD_SetTextColor(txtClr);
+	BSP_LCD_SetBackColor(btnClr);
+	BSP_LCD_DisplayStringAt(0,LCDYMAX/(MENUSIZE+1)*(btn+1)-MFONTSIZE/2,(uint8_t *)menuOpt[btn],CENTER_MODE);
 }
 
 void printMenu(){
+	BSP_LCD_SetFont(&MFONT);
 	for(int i=0; i<MENUSIZE; i++){
-		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-		BSP_LCD_ClearStringLine(2*i);
-		BSP_LCD_DisplayStringAtLine(2*i, (uint8_t *)menuOpt[i]);
+		colourButton(i, BUTTONCLR, BUTTONTXTCLR);
 	}
 }
 
-void selectSq(Coord move){
-	BSP_LCD_SetTextColor(LCD_COLOR_DARKGRAY);
-	BSP_LCD_FillRect(toIndex(move.x), toIndex(move.y), SQSIZE, SQSIZE);
-}
-
-void deselectSq(Coord move){
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-	BSP_LCD_FillRect(toIndex(move.x), toIndex(move.y), SQSIZE, SQSIZE);
-}
-
-void checkTS(){
+void checkMenuTS(){
 	if(tsFlag){
 		tsFlag = 0;
-		deselectSq(sq);
-		pass.x = TS_State.touchX[0];
-		pass.y = TS_State.touchY[0];
-		selectSq(pass);
-		HAL_Delay(11);
+		touch.x = TS_State.touchX[0];
+		touch.y = TS_State.touchY[0];
+		int touchClr = BSP_LCD_ReadPixel(touch.x, touch.y);
+		if(touchClr==BUTTONCLR || touchClr==BUTTONTXTCLR){
+			tsFlag = 0;
+			btn = toButton(touch.y);
+			colourButton(btn, PRESSEDBUTTONCLR, PRESSEDBUTTONTXTCLR);
+			btnLeft = 1;
+			dsFlag = 1;
+		}else if(btnLeft && touchClr==BCKGND){
+			btnLeft = 0;
+			colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
+			dsFlag = 0;
+		}
+		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
-		deselectSq(pass);
-		move.x = TS_State.touchX[0];
-		move.y = TS_State.touchY[0];
-		board[toIndex(move.x)][toIndex(move.y)] = player;
-		player = !player;
-		printBoard();
+		colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
+		dsFlag = 0;
+		mode = GAME;
+	}
+}
+
+void checkGameTS(){
+	if(tsFlag){
+		tsFlag = 0;
+		deselectSq(touch);
+		touch.x = toIndex(TS_State.touchX[0]);
+		touch.y = toIndex(TS_State.touchY[0]);
+		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
+			if(tsFlag){
+				tsFlag = 0;
+				selectSq(touch);
+				HAL_Delay(11);
+				dsFlag = 1;
+			}else if(dsFlag){
+				dsFlag = 0;
+				board[touch.x][touch.y] = player;
+				player = !player;
+				printBoard();
+			}
+		}
 	}
 }
 
@@ -258,7 +346,7 @@ void checkTIM(){
 		}
 	}
 }
-*/
+
 /* USER CODE END 0 */
 
 /**
@@ -267,14 +355,14 @@ void checkTIM(){
   */
 int main(void)
 {
-
-
   /* USER CODE BEGIN 1 */
-  uint32_t ConvertedValue;
-  long int JTemp;
-  char desc[STRSIZE];
 
-  srand(time(NULL));
+
+	srand(time(NULL));
+	//uint32_t JTemp;
+	//char tempString[100];
+	//char tsString[20];
+
   /* USER CODE END 1 */
   
 
@@ -303,40 +391,42 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA2D_Init();
-  MX_DSIHOST_DSI_Init();
   MX_FMC_Init();
   MX_LTDC_Init();
+  MX_DSIHOST_DSI_Init();
   MX_TIM6_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+
   BSP_LCD_Init();
   BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER_BACKGROUND,LCD_FB_START_ADDRESS);
   BSP_LCD_Clear(LCD_COLOR_WHITE);
-  BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-  BSP_LCD_SetFont(&Font16);
 
-  BSP_TS_Init(800, 480);
+
+  BSP_TS_Init(800,480);
   BSP_TS_ITConfig();
 
-  BSP_LED_Init(LED1);
-  BSP_LED_Init(LED2);
+  HAL_TIM_Base_Start_IT(&htim6);
+  HAL_ADC_Start_IT(&hadc1);
+
+  //printBoard(boardX0, boardY0 , DIMENSION, boardPlaceWidth, boardPlaceHeight);
   //resetBoard();
   //printBoard();
-
-  HAL_ADC_Start(&hadc1);
-
-  HAL_TIM_Base_Start_IT(&htim6);
+  printMenu();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 
+    /* USER CODE END WHILE */
+	 //checkTIM();
+	 //checkTS();
     /* USER CODE BEGIN 3 */
-	//checkTIM();
-	//checkTS();
+
+	  checkMenuTS();
+
   }
   /* USER CODE END 3 */
 }
@@ -424,14 +514,14 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
   hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -440,7 +530,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -776,13 +866,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOI_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOJ_CLK_ENABLE();
 
   /*Configure GPIO pin : PI13 */
