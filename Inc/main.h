@@ -23,10 +23,13 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
-#include "proj1.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -91,6 +94,9 @@ void Error_Handler(void);
 #define AVG_SLOPE               25
 #define VREF                  3300
 
+#define PINK					  LCD_COLOR_LIGHTMAGENTA
+#define BLUE					  LCD_COLOR_CYAN
+
 #define SQSIZE					55
 #define CIRRAD					20
 #define BORDER					  (LCDYMAX-SQSIZE*ROWS)/2
@@ -135,8 +141,8 @@ void Error_Handler(void);
 #define EDIF					  E1-PL1
 #define TRUE 					 1
 #define FALSE 					 0
-#define PL1CLR					  LCD_COLOR_LIGHTMAGENTA
-#define PL2CLR					  LCD_COLOR_CYAN
+#define PL1CLR					  PINK
+#define PL2CLR					  BLUE
 #define E1CLR					  LCD_COLOR_DARKMAGENTA
 #define E2CLR					  LCD_COLOR_DARKCYAN
 #define BOARDCLR				  LCD_COLOR_BLACK
@@ -149,7 +155,7 @@ void Error_Handler(void);
 #define RHEADX				      LCDXCENTRE+BODYDIST
 #define BODYHEIGHT			   150
 #define BODYWIDTH			    75
-#define BODYY					  HEADY+HEADRAD
+#define BODYY					  HEADY+HEADRAD+DECAP
 #define RBODYX					  RHEADX-BODYWIDTH/2
 #define TRIP1X					  LHEADX
 #define TRIP1Y					  BODYY
@@ -157,12 +163,16 @@ void Error_Handler(void);
 #define TRIP2Y					  BODYY+BODYHEIGHT
 #define TRIP3X					  LHEADX+BODYWIDTH
 #define TRIP3Y					  BODYY+BODYHEIGHT
+#define DECAP					 5
 
 
 
 extern Content board[ROWS][COLS];
 /* USER CODE END Private defines */
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __MAIN_H */
 

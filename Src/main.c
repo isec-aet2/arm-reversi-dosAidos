@@ -39,6 +39,7 @@ _Bool timFlag = 0;
 _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 _Bool btnLeft = 0;
+_Bool personFlag = 0;
 int menuSize = 2;
 TS_StateTypeDef TS_State;
 
@@ -166,6 +167,30 @@ void printBoard(){
 	printFrame();
 }
 
+void play(){
+	if(player==ai){
+		//touch = chooseMove();
+	}
+	board[touch.x][touch.y] = player;
+	resetArray(allEnemies,8);
+	exposeAllEnemies(touch,player,allEnemies);
+	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
+		theConverter(allEnemies[i],touch,player);
+	}
+	printBoard();
+	player = !player;
+	end = checkAllMoves(player);
+	if(end){
+		debug("END");
+		mode = MENU;
+		printFlag = 1;
+		end = 0;
+	}
+	if(ai){
+		play();
+	}
+}
+
 void selectSq(Coord sq){
 	BSP_LCD_SetTextColor(SELECTEDCLR);
 	BSP_LCD_FillRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
@@ -220,67 +245,65 @@ pPoint createSkirt(pPoint skirt){
 	return skirt;
 }
 
-void printMale(){
-	BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
+void printMale(tcolour colour){
+	BSP_LCD_SetTextColor(colour);
 	BSP_LCD_FillCircle(RHEADX, HEADY, HEADRAD);
 	BSP_LCD_FillRect(RBODYX, BODYY, BODYWIDTH, BODYHEIGHT);
-	//BSP_LCD_FillRect(RBODYX, BODYY, BODYWIDTH, BODYHEIGHT);
 }
 
-void printFemale(){
-	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
+void printFemale(tcolour colour){
+	BSP_LCD_SetTextColor(colour);
 	BSP_LCD_FillCircle(LHEADX, HEADY, HEADRAD);
 	Point skirt[3];
 	BSP_LCD_FillPolygon(createSkirt(skirt), 3);
 }
 
 void checkMenuTS(){
+	tcolour touchClr;
 	if(tsFlag){
 		tsFlag = 0;
 		touch.x = TS_State.touchX[0];
 		touch.y = TS_State.touchY[0];
-		int touchClr = BSP_LCD_ReadPixel(touch.x, touch.y);
+		touchClr = BSP_LCD_ReadPixel(touch.x, touch.y);
 		if(touchClr==BUTTONCLR || touchClr==BUTTONTXTCLR){
 			tsFlag = 0;
 			btn = toButton(touch.y);
 			colourButton(btn, PRESSEDBUTTONCLR, PRESSEDBUTTONTXTCLR);
+			personFlag = 0;
+			btnLeft = 1;
+			dsFlag = 1;
+		}else if(touchClr==BLUE || touchClr==PINK){
+			personFlag = 1;
 			btnLeft = 1;
 			dsFlag = 1;
 		}else if(btnLeft && touchClr==BCKGND){
+			personFlag = 0;
 			btnLeft = 0;
 			colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 			dsFlag = 0;
 		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
-		colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 		dsFlag = 0;
-		mode = GAME;
-		printFlag = 1;
-	}
-}
-
-void play(){
-	if(player==ai){
-		//touch = chooseMove();
-	}
-	board[touch.x][touch.y] = player;
-	resetArray(allEnemies,8);
-	exposeAllEnemies(touch,player,allEnemies);
-	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-		theConverter(allEnemies[i],touch,player);
-	}
-	printBoard();
-	player = !player;
-	end = checkAllMoves(player);
-	if(end){
-		debug("END");
-		mode = MENU;
-		printFlag = 1;
-		end = 0;
-	}
-	if(ai){
-		play();
+		if(personFlag){
+			if(touchClr==BLUE){
+				if(touch.x<LCDXCENTRE){
+					printFemale(PINK);
+				}else{
+					printMale(PINK);
+				}
+			}else if(touchClr==PINK){
+				if(touch.x<LCDXCENTRE){
+					printFemale(BLUE);
+				}else{
+					printMale(BLUE);
+				}
+			}
+		}else{
+			colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
+			mode = GAME;
+			printFlag = 1;
+		}
 	}
 }
 
@@ -367,23 +390,21 @@ int main(void)
 		switch(mode){
 		case MENU:
 			if(printFlag){
-			  BSP_LCD_Clear(BCKGND);
-			  printMenu();
-			  printFlag = 0;
+				BSP_LCD_Clear(BCKGND);
+				printMenu();
+				printMale(BLUE);
+				printFemale(PINK);
+				printFlag = 0;
 			}
 			checkMenuTS();
-			printMale();
-			printFemale();
 			break;
 		case GAME:
 			if(printFlag){
-			  BSP_LCD_Clear(BCKGND);
-			  printBoard();
-			  printFlag = 0;
+				BSP_LCD_Clear(BCKGND);
+				printBoard();
+				printFlag = 0;
 			}
 			checkGameTS();
 		}
 	}
 }
-
-
