@@ -204,14 +204,34 @@ void printMenu(){
 	}
 }
 
+pPoint createSkirt(pPoint skirt){
+	Point trip1;
+	Point trip2;
+	Point trip3;
+	trip1.X = TRIP1X;
+	trip1.Y = TRIP1Y;
+	trip2.X = TRIP2X;
+	trip2.Y = TRIP2Y;
+	trip3.X = TRIP3X;
+	trip3.Y = TRIP3Y;
+	skirt[0] = trip1;
+	skirt[1] = trip2;
+	skirt[2] = trip3;
+	return skirt;
+}
+
 void printMale(){
 	BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
 	BSP_LCD_FillCircle(RHEADX, HEADY, HEADRAD);
+	BSP_LCD_FillRect(RBODYX, BODYY, BODYWIDTH, BODYHEIGHT);
+	//BSP_LCD_FillRect(RBODYX, BODYY, BODYWIDTH, BODYHEIGHT);
 }
 
 void printFemale(){
 	BSP_LCD_SetTextColor(LCD_COLOR_LIGHTMAGENTA);
 	BSP_LCD_FillCircle(LHEADX, HEADY, HEADRAD);
+	Point skirt[3];
+	BSP_LCD_FillPolygon(createSkirt(skirt), 3);
 }
 
 void checkMenuTS(){

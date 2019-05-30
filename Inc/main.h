@@ -142,11 +142,21 @@ void Error_Handler(void);
 #define BOARDCLR				  LCD_COLOR_BLACK
 #define GRIDCLR					  LCD_COLOR_WHITE
 
-#define HEADDIST			   285
-#define HEADRAD				    50
+#define BODYDIST			   285
+#define HEADRAD				    30
 #define HEADY				   175
-#define LHEADX				      LCDXCENTRE-HEADDIST
-#define RHEADX				      LCDXCENTRE+HEADDIST
+#define LHEADX				      LCDXCENTRE-BODYDIST
+#define RHEADX				      LCDXCENTRE+BODYDIST
+#define BODYHEIGHT			   150
+#define BODYWIDTH			    75
+#define BODYY					  HEADY+HEADRAD
+#define RBODYX					  RHEADX-BODYWIDTH/2
+#define TRIP1X					  LHEADX
+#define TRIP1Y					  BODYY
+#define TRIP2X					  LHEADX-BODYWIDTH
+#define TRIP2Y					  BODYY+BODYHEIGHT
+#define TRIP3X					  LHEADX+BODYWIDTH
+#define TRIP3Y					  BODYY+BODYHEIGHT
 
 
 
