@@ -2,10 +2,7 @@
 #ifndef _R_
 #define _R_
 
-
-
 #include "main.h"
-
 
 #ifndef _Coord_
 #define _Coord_
@@ -25,5 +22,8 @@ int theConverter(Coord direction, Coord move, _Bool player);
 void resetArray(Coord array[], int size);
 _Bool checkAvail(Coord move, Coord avail[]);
 void proj1Main(_Bool player);
+
+int chooseBest(int possMoves[], int nAvail);
+Coord chooseMove(Coord avail[], int nAvail, Coord allEnemies[], _Bool player);
 
 #endif

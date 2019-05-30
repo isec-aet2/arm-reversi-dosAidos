@@ -1,18 +1,8 @@
 
+#include "stdlib.h"
 #include "proj1.h"
+#include "main.h"
 
-#define ROWS 					 8
-#define COLS 					 8
-#define NOCOORD 				-2
-#define EMPTY					-1
-#define PL1						 0
-#define PL2						 1
-#define E1						 2
-#define E2						 3
-#define TRUE 					 1
-#define FALSE 					 0
-
-int board[ROWS][COLS];
 
 _Bool checkAllMoves(_Bool player){ //checks all possible moves
 	int noMoves = TRUE;
@@ -142,5 +132,38 @@ void proj1Main(_Bool player){
     player=!player; //changes turns of players
 }
 
+int chooseBest(int possMoves[], int nAvail){
+	int max = 0;
+	for(int i=0; i<nAvail; i++){
+		if(possMoves[i]>max){
+			max = possMoves[i];
+		}
+	}
+	int bestMoves[nAvail];
+	int ibm = 0;
+	for(int i=0; i<nAvail; i++){
+		if(possMoves[i]==max){
+			bestMoves[ibm] = i;
+			ibm++;
+		}
+	}
+	int r = rand()%ibm;
+	return possMoves[bestMoves[r]];
+}
+
+Coord chooseMove(Coord avail[], int nAvail, Coord allEnemies[], _Bool player){
+	int nEnemies;
+	int possMoves[nAvail];
+	int bestMove;
+	for(int i=0; i<nAvail; i++){
+		nEnemies = exposeAllEnemies(avail[i],player,allEnemies);
+		for(int j=0; j<nEnemies; j++){
+			nEnemies *= theConverter(allEnemies[j],avail[i],player);
+		}
+		possMoves[i] = nEnemies;
+	}
+	bestMove = chooseBest(possMoves,nAvail);
+	return allEnemies[bestMove];
+}
 
 
