@@ -1,6 +1,7 @@
 
 #include "ai.h"
 #include "main.h"
+#include <stdlib.h>
 
 int chooseBest(int possMoves[], int nAvail){
 	int max = 0;
