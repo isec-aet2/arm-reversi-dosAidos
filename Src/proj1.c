@@ -14,8 +14,8 @@
 
 int board[ROWS][COLS];
 
-int checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
-    int n=0;
+_Bool checkAllMoves(_Bool player){ //checks all possible moves
+	int noMoves = TRUE;
     for(int i=0; i<ROWS; i++){
         for(int j=0; j<COLS; j++){
             if(board[i][j] == EMPTY){
@@ -23,15 +23,15 @@ int checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
             	empty.x = i;
             	empty.y = j;
                 if(checkEnemies(player,empty)){
-                    avail[n] = empty; //if checkEnemies is true, the move will be stores in avail[]
-                    n++;
+                    board[empty.x][empty.y] = E1; //if checkEnemies is true, the move will be stores in avail[]
+                    if(player) board[empty.x][empty.y] = E2;
+                    noMoves = FALSE;
                 }
             }
         }
     }
-    return n;
+    return noMoves;
 }
-
 
 _Bool checkEnemies(_Bool player, Coord empty){ //checks if there are enemies nearby the player's move
    for(int i=-1; i<=1; i++){ //avoids crossing the matrix's borders
@@ -127,7 +127,7 @@ void proj1Main(_Bool player){
 	Coord move;
     Coord avail[ROWS*COLS];//create array of available moves and set it to all zeros
     resetArray(avail,ROWS*COLS);
-    checkAllMoves(player,avail);//checks all the possible moves and stores them in the avail[] array
+    checkAllMoves();//checks all the possible moves and stores them in the avail[] array
 	if(avail[0].x==NOCOORD){ // ends the game when there are no move available moves to play
 		return;
 	}

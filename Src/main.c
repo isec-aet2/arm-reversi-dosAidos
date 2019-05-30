@@ -31,8 +31,8 @@
 #include "stm32f769i_discovery.h"
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
-//#include "proj1.h"
-//#include "ai.h"
+#include "proj1.h"
+#include "ai.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -139,13 +139,15 @@ _Bool btnLeft = 0;
 TS_StateTypeDef TS_State;
 
 State mode = MENU;
+_Bool ai;
+_Bool printFlag = 1;
 int board[ROWS][COLS];
 _Bool player = PL1;
 Coord touch;
 Coord prev;
 int btn;
-//Coord pass;
-//Coord move;
+Coord allEnemies[8];
+_Bool end = 0;
 
 char menuOpt[MENUSIZE][STRSIZE] = {"Resume game","Play against AI","Play against NI"};
 
@@ -302,7 +304,7 @@ void colourButton(int btn, int btnClr, int txtClr){
 
 void printMenu(){
 	BSP_LCD_SetFont(&MFONT);
-	for(int i=0; i<MENUSIZE; i++){
+	for(int i=1; i<MENUSIZE; i++){
 		colourButton(i, BUTTONCLR, BUTTONTXTCLR);
 	}
 }
@@ -329,6 +331,30 @@ void checkMenuTS(){
 		colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 		dsFlag = 0;
 		mode = GAME;
+		printFlag = 1;
+	}
+}
+
+void play(){
+	if(player==ai){
+		touch = chooseMove();
+	}
+	board[touch.x][touch.y] = player;
+	resetArray(allEnemies,8);
+	exposeAllEnemies(touch,player,allEnemies);
+	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
+	  theConverter(allEnemies[i],move,player);
+	}
+	printBoard();
+	player = !player;
+	end = checkAllMoves(player);
+	if(end){
+		mode = MENU;
+		printFlag = 1;
+		end = 0;
+	}
+	if(ai){
+		play();
 	}
 }
 
@@ -345,24 +371,11 @@ void checkGameTS(){
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
-
 		}
-		HAL_Delay(TOUCHDELAY+100);
-		/*	tsFlag = 0;
-			selectSq(touch);
-			dsFlag = 1;
-			btnLeft = 1;
-		}else if(btnLeft){
-			btnLeft = 0;
-			printBoard();
-			dsFlag = 0;
-		}*/
-		//HAL_Delay(TOUCHDELAY);
+		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		dsFlag = 0;
-		board[touch.x][touch.y] = player;
-		player = !player;
-		printBoard();
+		play();
 	}
 }
 
@@ -443,23 +456,31 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_ADC_Start_IT(&hadc1);
 
-  //printBoard(boardX0, boardY0 , DIMENSION, boardPlaceWidth, boardPlaceHeight);
   resetBoard();
-  printBoard();
-  //printMenu();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-    /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
-
-	  checkGameTS();
-
+	  switch(mode){
+	  case MENU:
+		  if(printFlag){
+			  printMenu();
+			  printFlag = 0;
+		  }
+		  checkMenuTS();
+		  //printMale();
+		  //printFemale();
+		  break;
+	  case GAME:
+		  if(printFlag){
+			  printBoard();
+			  printFlag = 0;
+		  }
+		  checkGameTS();
+	  }
   }
   /* USER CODE END 3 */
 }

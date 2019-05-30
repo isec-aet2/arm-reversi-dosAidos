@@ -17,7 +17,7 @@ typedef struct _coord{
 
 #endif
 
-int checkAllMoves(_Bool player, Coord avail[]);
+_Bool checkAllMoves(_Bool player);
 _Bool checkEnemies(_Bool player, Coord empty);
 _Bool checkTrapped(_Bool player, Coord empty, Coord enemy);
 int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]);
