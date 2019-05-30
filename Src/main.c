@@ -53,10 +53,11 @@
 #define CIRRAD					20
 #define BORDER					  (LCDYMAX-SQSIZE*ROWS)/2
 #define STRSIZE				   100
-#define MENUSIZE				 3
 #define ELIPSEX				   150
 #define ELIPSEY				    30
-#define MFONT				Font24
+#define TEMPCLR					  LCD_COLOR_GRAY
+#define TEMPFONT				  Font8
+#define MFONT					  Font24
 #define MFONTSIZE				24
 #define TOUCHDELAY				12
 #define BCKGND					  LCD_COLOR_WHITE
@@ -77,11 +78,12 @@
 #define ROWS 					 8
 #define COLS 					 8
 #define NOCOORD 				-2
-#define EMPTY					-1
-#define PL1						 0
-#define PL2						 1
-#define E1						 2
-#define E2						 3
+//#define EMPTY					-1
+//#define PL1					 0
+//#define PL2					 1
+//#define E1					 2
+//#define E2					 3
+#define EDIF					  E1-PL1
 #define TRUE 					 1
 #define FALSE 					 0
 #define PL1CLR					  LCD_COLOR_LIGHTMAGENTA
@@ -127,7 +129,11 @@ typedef struct _game{
 }Game;
 #endif
 
+typedef int tcolour;
 typedef enum _state {MENU,GAME} State;
+typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
+
+tcolour contClr[] = {LCD_COLOR_LIGHTMAGENTA,LCD_COLOR_CYAN,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
 
 int timCount = 0;
 _Bool timFlag = 0;
@@ -135,13 +141,13 @@ _Bool timFlag = 0;
 _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 _Bool btnLeft = 0;
-//_Bool tdsFlag = 0;
+int menuSize = 2;
 TS_StateTypeDef TS_State;
 
 State mode = MENU;
 _Bool ai;
 _Bool printFlag = 1;
-int board[ROWS][COLS];
+Content board[ROWS][COLS];
 _Bool player = PL1;
 Coord touch;
 Coord prev;
@@ -149,7 +155,7 @@ int btn;
 Coord allEnemies[8];
 _Bool end = 0;
 
-char menuOpt[MENUSIZE][STRSIZE] = {"Resume game","Play against AI","Play against NI"};
+char menuOpt[][STRSIZE] = {"Play against AI","Play against NI","Resume game"};
 
 uint32_t ConvertedValue;
 	long int JTemp;
@@ -172,6 +178,13 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void debug(char * text){
+	BSP_LCD_SetBackColor(BCKGND);
+	BSP_LCD_SetTextColor(LCD_COLOR_RED);
+	BSP_LCD_SetFont(&Font24);
+	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t *)text, RIGHT_MODE);
+}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 	if(htim -> Instance == TIM6){
@@ -223,7 +236,7 @@ int toIndex(int pos){
 }
 
 int toButton(int posY){
-	return posY*MENUSIZE/LCDYMAX;
+	return posY*menuSize/LCDYMAX;
 }
 
 void resetBoard(){
@@ -240,35 +253,80 @@ void resetBoard(){
 	}
 }
 
+void printFrame(){
+	BSP_LCD_SetTextColor(PL1CLR);//BCKGND);
+	BSP_LCD_FillRect(0, 0, SQSIZE*ROWS+2*BORDER, BORDER);
+	BSP_LCD_FillRect(0, 0, BORDER, SQSIZE*COLS+2*BORDER);
+	BSP_LCD_FillRect(0, SQSIZE*COLS+BORDER+1, SQSIZE*ROWS+2*BORDER, BORDER);
+	BSP_LCD_FillRect(SQSIZE*ROWS+BORDER+1, 0, BORDER, SQSIZE*COLS+2*BORDER);
+}
+
 void printBoard(){
-	  for(int i=0; i<ROWS; i++){
-		  for(int j=0; j<COLS; j++){
-			  BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-			  BSP_LCD_FillRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
-			  BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-			  BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
-			  if(board[i][j]==PL1){
-				  BSP_LCD_SetTextColor(PL1CLR);
-				  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-				  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-				  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
-			  }
-			  if(board[i][j]==PL2){
-				  BSP_LCD_SetTextColor(PL2CLR);
-				  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-				  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-				  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
-			  }
-			  if(board[i][j]==E1){
-				  BSP_LCD_SetTextColor(E1CLR);
-				  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-			  }
-			  if(board[i][j]==E2){
-				  BSP_LCD_SetTextColor(E2CLR);
-				  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-			  }
-		  }
-	  }
+//	for(int i=0; i<ROWS; i++){
+//			  for(int j=0; j<COLS; j++){
+//				  BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+//				  BSP_LCD_FillRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+//				  BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+//				  BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+//				  if(board[i][j]==PL1){
+//					  BSP_LCD_SetTextColor(PL1CLR);
+//					  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+//					  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+//					  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
+//				  }
+//				  if(board[i][j]==PL2){
+//					  BSP_LCD_SetTextColor(PL2CLR);
+//					  BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+//					  //BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+//					  //BSP_LCD_DrawCircle(BORDER+SQSIZE*(i+0.5), BORDER+SQSIZE*(j+0.5), CIRRAD);
+//				  }
+//				  if(board[i][j]==E1){
+//					  BSP_LCD_SetTextColor(E1CLR);
+//					  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+//				  }
+//				  if(board[i][j]==E2){
+//					  BSP_LCD_SetTextColor(E2CLR);
+//					  BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+//				  }
+//			  }
+//		  }
+//	Content sq;
+//	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+//	BSP_LCD_FillRect(BORDER, BORDER, SQSIZE*ROWS, SQSIZE*COLS);
+//	for(int i=0; i<ROWS; i++){
+//		for(int j=0; j<COLS; j++){
+//			sq = board[i][j];
+//			BSP_LCD_SetTextColor(GRIDCLR);
+//			BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+//			if(sq<=PL2){
+//				BSP_LCD_SetTextColor(contClr[sq]);
+//				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+//			}else if(sq<=PL2+EDIF){
+//				BSP_LCD_SetTextColor(contClr[sq]);
+//				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+//			}
+//		}
+//	}
+//	printFrame();
+	Content sq;
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	BSP_LCD_FillRect(BORDER, BORDER, SQSIZE*ROWS, SQSIZE*COLS);
+	for(int i=0; i<ROWS; i++){
+		for(int j=0; j<COLS; j++){
+			sq = board[i][j];
+			BSP_LCD_SetTextColor(GRIDCLR);
+			BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+			if(sq<=PL2){
+				BSP_LCD_SetTextColor(contClr[sq]);
+				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+				//continue;
+			}else if(sq<=PL2+EDIF){
+				BSP_LCD_SetTextColor(contClr[sq]);
+				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+			}
+		}
+	}
+	printFrame();
 }
 
 void selectSq(Coord sq){
@@ -296,15 +354,15 @@ void selectSq(Coord sq){
 
 void colourButton(int btn, int btnClr, int txtClr){
 	BSP_LCD_SetTextColor(btnClr);
-	BSP_LCD_FillEllipse(LCDXCENTRE, LCDYMAX/(MENUSIZE+1)*(btn+1), ELIPSEX, ELIPSEY);
+	BSP_LCD_FillEllipse(LCDXCENTRE, LCDYMAX/(menuSize+1)*(btn+1), ELIPSEX, ELIPSEY);
 	BSP_LCD_SetTextColor(txtClr);
 	BSP_LCD_SetBackColor(btnClr);
-	BSP_LCD_DisplayStringAt(0,LCDYMAX/(MENUSIZE+1)*(btn+1)-MFONTSIZE/2,(uint8_t *)menuOpt[btn],CENTER_MODE);
+	BSP_LCD_DisplayStringAt(0,LCDYMAX/(menuSize+1)*(btn+1)-MFONTSIZE/2,(uint8_t *)menuOpt[btn],CENTER_MODE);
 }
 
 void printMenu(){
 	BSP_LCD_SetFont(&MFONT);
-	for(int i=1; i<MENUSIZE; i++){
+	for(int i=0; i<menuSize; i++){
 		colourButton(i, BUTTONCLR, BUTTONTXTCLR);
 	}
 }
@@ -337,18 +395,19 @@ void checkMenuTS(){
 
 void play(){
 	if(player==ai){
-		touch = chooseMove();
+		//touch = chooseMove();
 	}
 	board[touch.x][touch.y] = player;
 	resetArray(allEnemies,8);
 	exposeAllEnemies(touch,player,allEnemies);
 	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-	  theConverter(allEnemies[i],move,player);
+		theConverter(allEnemies[i],touch,player);
 	}
 	printBoard();
 	player = !player;
 	end = checkAllMoves(player);
 	if(end){
+		debug("END");
 		mode = MENU;
 		printFlag = 1;
 		end = 0;
@@ -388,9 +447,11 @@ void checkTIM(){
 			ConvertedValue=HAL_ADC_GetValue(&hadc1);
 			JTemp = ((((ConvertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
 			BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-			sprintf(desc, "\tInternal temperature: %ld degrees Celsius", JTemp);
-			BSP_LCD_ClearStringLine(1);
-			BSP_LCD_DisplayStringAtLine(1, (uint8_t *)desc);
+			sprintf(desc, "\t%ld degrees Celsius", JTemp);
+			BSP_LCD_SetFont(&TEMPFONT);
+			BSP_LCD_SetTextColor(TEMPCLR);
+			BSP_LCD_SetBackColor(BCKGND);
+			BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)desc, RIGHT_MODE);
 		}
 	}
 }
@@ -457,16 +518,19 @@ int main(void)
   HAL_ADC_Start_IT(&hadc1);
 
   resetBoard();
+  end = checkAllMoves(player);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  checkTIM();
     /* USER CODE BEGIN 3 */
 	  switch(mode){
 	  case MENU:
 		  if(printFlag){
+			  BSP_LCD_Clear(BCKGND);
 			  printMenu();
 			  printFlag = 0;
 		  }
@@ -476,6 +540,7 @@ int main(void)
 		  break;
 	  case GAME:
 		  if(printFlag){
+			  BSP_LCD_Clear(BCKGND);
 			  printBoard();
 			  printFlag = 0;
 		  }

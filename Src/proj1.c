@@ -18,7 +18,7 @@ _Bool checkAllMoves(_Bool player){ //checks all possible moves
 	int noMoves = TRUE;
     for(int i=0; i<ROWS; i++){
         for(int j=0; j<COLS; j++){
-            if(board[i][j] == EMPTY){
+            if(board[i][j] > PL2){//== EMPTY){
             	Coord empty;
             	empty.x = i;
             	empty.y = j;
@@ -127,7 +127,7 @@ void proj1Main(_Bool player){
 	Coord move;
     Coord avail[ROWS*COLS];//create array of available moves and set it to all zeros
     resetArray(avail,ROWS*COLS);
-    checkAllMoves();//checks all the possible moves and stores them in the avail[] array
+    checkAllMoves(player);//checks all the possible moves and stores them in the avail[] array
 	if(avail[0].x==NOCOORD){ // ends the game when there are no move available moves to play
 		return;
 	}
