@@ -29,6 +29,16 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
+#include "configs.h"
+#include "main.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "time.h"
+#include "math.h"
+#include "stm32f769i_discovery.h"
+#include "stm32f769i_discovery_lcd.h"
+#include "stm32f769i_discovery_ts.h"
+#include "proj1.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -79,6 +89,28 @@ typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void debug(char * text);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
+void analogClock(int colour);
+void printCountdown(int sec, int colour);
+int toPos(int index);
+int toIndex(int pos);
+int toButton(int posY);
+void resetBoard();
+void printFrame();
+void printBoard();
+void funcao(Coord move);
+void play();
+void selectSq(Coord sq);
+void colourButton(int btn, int btnClr, int txtClr);
+void printMenu();
+pPoint createSkirt(pPoint skirt);
+void printMale(tcolour colour);
+void printFemale(tcolour colour);
+void checkMenuTS();
+void checkGameTS();
+void checkTIM();
 
 /* USER CODE BEGIN EFP */
 //extern int board[ROWS][COLS];
@@ -111,6 +143,7 @@ void Error_Handler(void);
 #define MFONTSIZE				24
 
 #define TOUCHDELAY				12
+#define AIDELAY				   500
 
 #define BCKGND					  LCD_COLOR_WHITE
 #define BUTTONCLR				  LCD_COLOR_DARKMAGENTA
@@ -163,8 +196,7 @@ void Error_Handler(void);
 #define TRIP2Y					  BODYY+BODYHEIGHT
 #define TRIP3X					  LHEADX+BODYWIDTH
 #define TRIP3Y					  BODYY+BODYHEIGHT
-#define DECAP					 5
-
+#define DECAP					10
 
 
 extern Content board[ROWS][COLS];

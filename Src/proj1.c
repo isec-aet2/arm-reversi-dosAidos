@@ -4,23 +4,63 @@
 #include "main.h"
 
 
-_Bool checkAllMoves(_Bool player){ //checks all possible moves
-	int noMoves = TRUE;
+int chooseBest(int possMoves[], int nAvail){
+	int max = 0;
+	for(int i=0; i<nAvail; i++){
+		if(possMoves[i]>max){
+			max = possMoves[i];
+		}
+	}
+	int bestMoves[nAvail];
+	int ibm = 0;
+	for(int i=0; i<nAvail; i++){
+		if(possMoves[i]==max){
+			bestMoves[ibm] = i;
+			ibm++;
+		}
+	}
+	int r = rand()%ibm;
+	return 0;
+	return possMoves[bestMoves[r]];
+}
+
+Coord chooseMove(Coord avail[], int nAvail, Coord allEnemies[], _Bool player){
+	int possMoves[nAvail];
+	for(int i=0; i<nAvail; i++){
+		int nEnemies = 0;
+		int nDirec = exposeAllEnemies(avail[i],player,allEnemies);
+		for(int j=0; j<nDirec; j++){
+			nEnemies += theConverter(allEnemies[j],avail[i],player,1);
+		}
+		possMoves[i] = nEnemies;
+	}
+	int bestMove = chooseBest(possMoves,nAvail);
+//	Coord c;
+//	c.x = 1;
+//	c.y = 1;
+//	return c;
+	return avail[bestMove];
+}
+
+int checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
+	int n = 0;
     for(int i=0; i<ROWS; i++){
         for(int j=0; j<COLS; j++){
-            if(board[i][j] > PL2){//== EMPTY){
+            if(board[i][j] > PL2){//== EMPTY{
             	Coord empty;
             	empty.x = i;
             	empty.y = j;
                 if(checkEnemies(player,empty)){
-                    board[empty.x][empty.y] = E1; //if checkEnemies is true, the move will be stores in avail[]
-                    if(player) board[empty.x][empty.y] = E2;
-                    noMoves = FALSE;
+                    board[empty.x][empty.y] = player+EDIF;
+                    avail[n] = empty;
+                    n++;
+                }else{
+                	board[empty.x][empty.y] = EMPTY;
                 }
             }
         }
     }
-    return noMoves;
+    return n;
 }
 
 _Bool checkEnemies(_Bool player, Coord empty){ //checks if there are enemies nearby the player's move
@@ -84,12 +124,14 @@ int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the 
     return n;
 }
 
-int theConverter(Coord direction, Coord move, _Bool player){ //converts the trapped enemy's pieces to player's pieces
+int theConverter(Coord direction, Coord move, _Bool player, _Bool ai){ //converts the trapped enemy's pieces to player's pieces
     int nEnemies = 0;
 	do{
 		nEnemies++;
-        board[move.x][move.y] = player; //follows the enemy's direction until it reaches player's piece and convert all the pieces in between
-        move.x += direction.x;
+		if(!ai){
+			board[move.x][move.y] = player; //follows the enemy's direction until it reaches player's piece and convert all the pieces in between
+		}
+		move.x += direction.x;
         move.y += direction.y;
         if(move.x<0 || move.x>=ROWS || move.y<0 || move.y>=COLS){
             break;
@@ -113,57 +155,5 @@ _Bool checkAvail(Coord move, Coord avail[]){ //checks is the player's move is in
     return FALSE;
 }
 
-void proj1Main(_Bool player){
-	Coord move;
-    Coord avail[ROWS*COLS];//create array of available moves and set it to all zeros
-    resetArray(avail,ROWS*COLS);
-    checkAllMoves(player);//checks all the possible moves and stores them in the avail[] array
-	if(avail[0].x==NOCOORD){ // ends the game when there are no move available moves to play
-		return;
-	}
-    /*int move = setMove( board, symbol, name, player, avail); //receives input from user and checks if it is one of the available options
-    moveToIndexes(move,board,&row,&col,player); //converts move given by player to board coordinates */
-    Coord allEnemies[8]; //creates array with the directions(differences between enemy coordinates and the move's coordinates) of all the enemies nearby
-    resetArray(allEnemies,8); //clears all elements from the allEnemies array
-    exposeAllEnemies(move,player,allEnemies); //checks all the directions where convertion is needed and stores it in the allEnemies[] array
-    for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-        theConverter(allEnemies[i],move,player);
-    }
-    player=!player; //changes turns of players
-}
-
-int chooseBest(int possMoves[], int nAvail){
-	int max = 0;
-	for(int i=0; i<nAvail; i++){
-		if(possMoves[i]>max){
-			max = possMoves[i];
-		}
-	}
-	int bestMoves[nAvail];
-	int ibm = 0;
-	for(int i=0; i<nAvail; i++){
-		if(possMoves[i]==max){
-			bestMoves[ibm] = i;
-			ibm++;
-		}
-	}
-	int r = rand()%ibm;
-	return possMoves[bestMoves[r]];
-}
-
-Coord chooseMove(Coord avail[], int nAvail, Coord allEnemies[], _Bool player){
-	int nEnemies;
-	int possMoves[nAvail];
-	int bestMove;
-	for(int i=0; i<nAvail; i++){
-		nEnemies = exposeAllEnemies(avail[i],player,allEnemies);
-		for(int j=0; j<nEnemies; j++){
-			nEnemies *= theConverter(allEnemies[j],avail[i],player);
-		}
-		possMoves[i] = nEnemies;
-	}
-	bestMove = chooseBest(possMoves,nAvail);
-	return allEnemies[bestMove];
-}
 
 

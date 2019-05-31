@@ -19,6 +19,8 @@ void MX_TIM6_Init(void);
 void MX_ADC1_Init(void);
 void MX_SDMMC2_SD_Init(void);
 void MX_TIM7_Init(void);
+void Error_Handler(void);
+void assert_failed(uint8_t *file, uint32_t line);
 
 
 #endif

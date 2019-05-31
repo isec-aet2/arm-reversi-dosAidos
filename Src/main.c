@@ -35,7 +35,7 @@ tcolour contClr[] = {LCD_COLOR_LIGHTMAGENTA,LCD_COLOR_CYAN,LCD_COLOR_DARKMAGENTA
 
 int timCount = 0;
 _Bool timFlag = 0;
-
+_Bool pbFlag = 0;
 _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 _Bool btnLeft = 0;
@@ -51,14 +51,18 @@ _Bool player = PL1;
 Coord touch;
 Coord prev;
 int btn;
+Coord avail[ROWS*COLS];
 Coord allEnemies[8];
-_Bool end = 0;
+int remain = 0;
 
 char menuOpt[][STRSIZE] = {"Play against AI","Play against NI","Resume game"};
 
 uint32_t ConvertedValue;
 long int JTemp;
 char desc[STRSIZE];
+
+
+
 
 
 
@@ -86,6 +90,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 	if(GPIO_Pin == GPIO_PIN_0){
 		mode = MENU;
+		//pbFlag = 1;
+		printFlag = 1;
+		menuSize = 3;
+//		char r[STRSIZE];
+//		sprintf(r, "%d", rand());
+//		debug(r);
 	}
 }
 
@@ -135,6 +145,7 @@ void resetBoard(){
 			}
 		}
 	}
+	checkAllMoves(player,avail);
 }
 
 void printFrame(){
@@ -147,7 +158,7 @@ void printFrame(){
 
 void printBoard(){
 	Content sq;
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	BSP_LCD_SetTextColor(BOARDCLR);
 	BSP_LCD_FillRect(BORDER, BORDER, SQSIZE*ROWS, SQSIZE*COLS);
 	for(int i=0; i<ROWS; i++){
 		for(int j=0; j<COLS; j++){
@@ -158,7 +169,7 @@ void printBoard(){
 				BSP_LCD_SetTextColor(contClr[sq]);
 				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 				//continue;
-			}else if(sq<=PL2+EDIF){
+			}else if(sq==player+EDIF){
 				BSP_LCD_SetTextColor(contClr[sq]);
 				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 			}
@@ -167,52 +178,68 @@ void printBoard(){
 	printFrame();
 }
 
-void play(){
-	if(player==ai){
-		//touch = chooseMove();
-	}
-	board[touch.x][touch.y] = player;
-	resetArray(allEnemies,8);
-	exposeAllEnemies(touch,player,allEnemies);
-	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-		theConverter(allEnemies[i],touch,player);
-	}
-	printBoard();
-	player = !player;
-	end = checkAllMoves(player);
-	if(end){
-		debug("END");
-		mode = MENU;
-		printFlag = 1;
-		end = 0;
-	}
-	if(ai){
-		play();
-	}
-}
-
 void selectSq(Coord sq){
 	BSP_LCD_SetTextColor(SELECTEDCLR);
 	BSP_LCD_FillRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
 	BSP_LCD_SetTextColor(GRIDCLR);
 	BSP_LCD_DrawRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
 	if(board[sq.x][sq.y]!=EMPTY){
-		switch(board[sq.x][sq.y]){
-			case PL1:
-				BSP_LCD_SetTextColor(PL1CLR);
-				break;
-			case PL2:
-				BSP_LCD_SetTextColor(PL2CLR);
-				break;
-			case E1:
-				BSP_LCD_SetTextColor(E1CLR);
-				break;
-			case E2:
-				BSP_LCD_SetTextColor(E2CLR);
-		}
+		BSP_LCD_SetTextColor(contClr[board[sq.x][sq.y]]);
 	BSP_LCD_FillCircle(toPos(sq.x)+SQSIZE/2.0, toPos(sq.y)+SQSIZE/2.0, CIRRAD);
 	}
 }
+
+void funcao(Coord move){
+	Coord pass;
+	pass.x = rand()%ROWS;
+	pass.y = rand()%COLS;
+	selectSq(pass);
+	HAL_Delay(AIDELAY);
+	int difX = (move.x>pass.x)*2-1;
+	int difY = (move.y>pass.y)*2-1;
+	while(pass.x!=move.x || pass.y!=move.y){
+		if(pass.x!=move.x){
+			if(!(rand()%3)){
+				pass.x += difX;
+			}
+		}
+		if(pass.y!=move.y){
+			if(!(rand()%3)){
+				pass.y += difY;
+			}
+		}
+		printBoard();
+		selectSq(pass);
+		HAL_Delay(AIDELAY);
+	}
+}
+
+void play(){
+	board[touch.x][touch.y] = player;
+	resetArray(allEnemies,8);
+	exposeAllEnemies(touch,player,allEnemies);
+	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
+		theConverter(allEnemies[i],touch,player,0);
+	}
+	player = !player;
+	remain = checkAllMoves(player,avail);
+	printBoard();
+	if(!remain){
+		//debug("END");
+		//resetBoard();
+		//mode = MENU;
+		menuSize = 2;
+		printFlag = 1;
+		remain = 0;
+	}
+	if(ai && player==ai){
+		touch = chooseMove(avail,remain,allEnemies,player);
+		funcao(touch);
+		play();
+	}
+}
+
+
 
 void colourButton(int btn, int btnClr, int txtClr){
 	BSP_LCD_SetTextColor(btnClr);
@@ -300,9 +327,17 @@ void checkMenuTS(){
 				}
 			}
 		}else{
-			colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
+			//colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 			mode = GAME;
 			printFlag = 1;
+			if(btn==0){
+				ai = 1;
+				resetBoard();
+			}
+			if(btn==1){
+				ai = 0;
+				resetBoard();
+			}
 		}
 	}
 }
@@ -323,8 +358,11 @@ void checkGameTS(){
 		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
+		printBoard();
 		dsFlag = 0;
-		play();
+		if(board[touch.x][touch.y]==player+EDIF){
+			play();
+		}
 	}
 }
 
@@ -332,12 +370,11 @@ void checkTIM(){
 	if(timFlag){
 		timFlag = 0;
 		HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
-		if(status==HAL_OK)
-		{
+		if(status==HAL_OK){
 			ConvertedValue=HAL_ADC_GetValue(&hadc1);
 			JTemp = ((((ConvertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
 			BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-			sprintf(desc, "\t%ld degrees Celsius", JTemp);
+			sprintf(desc, "%ld degrees Celsius", JTemp);
 			BSP_LCD_SetTextColor(TEMPCLR);
 			BSP_LCD_SetBackColor(BCKGND);
 			BSP_LCD_SetFont(&TEMPFONT);
@@ -381,7 +418,6 @@ int main(void)
 	HAL_ADC_Start_IT(&hadc1);
 
 	resetBoard();
-	checkAllMoves(player);
 
 
 	while (1)
@@ -392,8 +428,8 @@ int main(void)
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printMenu();
-				printMale(BLUE);
-				printFemale(PINK);
+				//printMale(BLUE);
+				//printFemale(PINK);
 				printFlag = 0;
 			}
 			checkMenuTS();
