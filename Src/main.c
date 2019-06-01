@@ -31,7 +31,7 @@ typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
 #endif
 
 
-tcolour contClr[] = {PINK,BLUE,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
+tcolour pieceClr[] = {PINK,BLUE,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
 
 int timCount = 0;
 _Bool timFlag = 0;
@@ -166,11 +166,11 @@ void printBoard(){
 			BSP_LCD_SetTextColor(GRIDCLR);
 			BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
 			if(sq<=PL2){
-				BSP_LCD_SetTextColor(contClr[sq]);
+				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 				//continue;
 			}else if(sq==player+EDIF){
-				BSP_LCD_SetTextColor(contClr[sq]);
+				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
 			}
 		}
@@ -184,12 +184,12 @@ void selectSq(Coord sq){
 	BSP_LCD_SetTextColor(GRIDCLR);
 	BSP_LCD_DrawRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
 	if(board[sq.x][sq.y]!=EMPTY){
-		BSP_LCD_SetTextColor(contClr[board[sq.x][sq.y]]);
+		BSP_LCD_SetTextColor(pieceClr[board[sq.x][sq.y]]);
 	BSP_LCD_FillCircle(toPos(sq.x)+SQSIZE/2.0, toPos(sq.y)+SQSIZE/2.0, CIRRAD);
 	}
 }
 
-void funcao(Coord move){
+void playAI(Coord move){
 	Coord pass;
 	pass.x = rand()%ROWS;
 	pass.y = rand()%COLS;
@@ -234,31 +234,32 @@ void play(){
 	}
 	if(ai && player==ai){
 		touch = chooseMove(avail,remain,allEnemies,player);
-		funcao(touch);
+		playAI(touch);
 		play();
 	}
 }
 
 void convertColour(Coord enemy){
-	tcolour cdif;
-	if(contClr[player]==PINK){
-		cdif = G-R;
-		debug("pink");
+	int sign;
+	if(pieceClr[player]==PINK){
+		sign = 1;
+		//debug("pink");
 	}
-	if(contClr[player]==BLUE){
-		cdif = R-G;
-		debug("blue");
+	if(pieceClr[player]==BLUE){
+		sign = -1;
+		//debug("blue");
 	}
-	for(tcolour c=contClr[!player]; c-CLRSPEED*cdif!=contClr[player]; c+=CLRSPEED*cdif){
-		if(contClr[player]-CLRSPEED*cdif<c){//c+CLRSPEED*cdif>contClr[player]){
-			c = contClr[player];
-			debug("in");
+	int inc = sign*(G-R)*CLRSPEED;
+	for(tcolour c=pieceClr[!player]; c-inc!=pieceClr[player]; c+=inc){
+		if(sign*(signed int)pieceClr[player]+inc<(signed int)sign*c){
+			c = pieceClr[player];
+			//debug("in");
 		}
 		BSP_LCD_SetTextColor(c);
 		BSP_LCD_FillCircle(toPos(enemy.x)+SQSIZE/2, toPos(enemy.y)+SQSIZE/2, CIRRAD);
 		HAL_Delay(CLRDELAY);
 	}
-	debug("out");
+	//debug("out");
 }
 
 void colourButton(int btn, int btnClr, int txtClr){

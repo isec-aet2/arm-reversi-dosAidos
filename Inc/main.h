@@ -67,7 +67,7 @@ typedef struct _coord{
 
 #endif
 
-typedef int tcolour;
+typedef uint32_t tcolour;
 typedef enum _state {MENU,GAME,NONE} State;
 typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
 
