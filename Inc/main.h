@@ -23,9 +23,6 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
@@ -71,7 +68,7 @@ typedef struct _coord{
 #endif
 
 typedef int tcolour;
-typedef enum _state {MENU,GAME} State;
+typedef enum _state {MENU,GAME,NONE} State;
 typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
 
 
@@ -92,8 +89,8 @@ void Error_Handler(void);
 void debug(char * text);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
-void analogClock(int colour);
-void printCountdown(int sec, int colour);
+void analogClock(tcolour colour);
+void printCountdown(int sec, tcolour colour);
 int toPos(int index);
 int toIndex(int pos);
 int toButton(int posY);
@@ -104,6 +101,7 @@ void funcao(Coord move);
 void play();
 void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
+void convertColour(Coord enemy);
 void printMenu();
 pPoint createSkirt(pPoint skirt);
 void printMale(tcolour colour);
@@ -126,7 +124,7 @@ void checkTIM();
 #define AVG_SLOPE               25
 #define VREF                  3300
 
-#define PINK					  LCD_COLOR_LIGHTMAGENTA
+#define PINK					  LCD_COLOR_MAGENTA
 #define BLUE					  LCD_COLOR_CYAN
 
 #define SQSIZE					55
@@ -143,13 +141,15 @@ void checkTIM();
 #define MFONTSIZE				24
 
 #define TOUCHDELAY				12
-#define AIDELAY				   500
+#define AIDELAY				   100
+#define CLRDELAY			     1
+#define CLRSPEED			     1
 
 #define BCKGND					  LCD_COLOR_WHITE
-#define BUTTONCLR				  LCD_COLOR_DARKMAGENTA
-#define BUTTONTXTCLR			  LCD_COLOR_LIGHTYELLOW
-#define PRESSEDBUTTONCLR		  LCD_COLOR_BLACK
-#define PRESSEDBUTTONTXTCLR		  LCD_COLOR_GRAY
+#define BUTTONCLR				  LCD_COLOR_LIGHTGRAY
+#define BUTTONTXTCLR			  LCD_COLOR_BLACK
+#define PRESSEDBUTTONCLR		  LCD_COLOR_DARKGRAY
+#define PRESSEDBUTTONTXTCLR		  LCD_COLOR_WHITE
 #define SELECTEDCLR				  LCD_COLOR_DARKGRAY
 #define SELECTEDDIF			 	  SQSIZE/5
 
@@ -181,6 +181,9 @@ void checkTIM();
 #define BOARDCLR				  LCD_COLOR_BLACK
 #define GRIDCLR					  LCD_COLOR_WHITE
 
+#define R	 			0x00000100
+#define G	 			0x00010000
+
 #define BODYDIST			   285
 #define HEADRAD				    30
 #define HEADY				   175
@@ -202,9 +205,7 @@ void checkTIM();
 extern Content board[ROWS][COLS];
 /* USER CODE END Private defines */
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif /* __MAIN_H */
 

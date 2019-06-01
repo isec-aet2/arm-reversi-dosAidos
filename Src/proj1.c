@@ -30,7 +30,7 @@ Coord chooseMove(Coord avail[], int nAvail, Coord allEnemies[], _Bool player){
 		int nEnemies = 0;
 		int nDirec = exposeAllEnemies(avail[i],player,allEnemies);
 		for(int j=0; j<nDirec; j++){
-			nEnemies += theConverter(allEnemies[j],avail[i],player,1);
+			nEnemies += theConverter(allEnemies[j],avail[i],player,0);
 		}
 		possMoves[i] = nEnemies;
 	}
@@ -124,19 +124,22 @@ int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the 
     return n;
 }
 
-int theConverter(Coord direction, Coord move, _Bool player, _Bool ai){ //converts the trapped enemy's pieces to player's pieces
+int theConverter(Coord direction, Coord move, _Bool player, _Bool conv){ //converts the trapped enemy's pieces to player's pieces
     int nEnemies = 0;
-	do{
+    move.x += direction.x;
+    move.y += direction.y;
+    while(board[move.x][move.y] == !player){
 		nEnemies++;
-		if(!ai){
+		if(conv){
 			board[move.x][move.y] = player; //follows the enemy's direction until it reaches player's piece and convert all the pieces in between
+			convertColour(move);
 		}
 		move.x += direction.x;
         move.y += direction.y;
         if(move.x<0 || move.x>=ROWS || move.y<0 || move.y>=COLS){
             break;
         }
-    }while(board[move.x][move.y] == !player);
+    }
 	return nEnemies;
 }
 

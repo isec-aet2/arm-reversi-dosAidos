@@ -31,7 +31,7 @@ typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
 #endif
 
 
-tcolour contClr[] = {LCD_COLOR_LIGHTMAGENTA,LCD_COLOR_CYAN,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
+tcolour contClr[] = {PINK,BLUE,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
 
 int timCount = 0;
 _Bool timFlag = 0;
@@ -99,7 +99,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 }
 
-void analogClock(int colour){
+void analogClock(tcolour colour){
 	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
 	BSP_LCD_SetTextColor(colour);
@@ -107,7 +107,7 @@ void analogClock(int colour){
 	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE);
 }
 
-void printCountdown(int sec, int colour){
+void printCountdown(int sec, tcolour colour){
 	int angle = 360*sec/TIMEOUTSEC;
 	int catX = CLCKRAD*(int)sin(angle);
 	int catY = CLCKRAD*(int)cos(angle);
@@ -219,7 +219,7 @@ void play(){
 	resetArray(allEnemies,8);
 	exposeAllEnemies(touch,player,allEnemies);
 	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-		theConverter(allEnemies[i],touch,player,0);
+		theConverter(allEnemies[i],touch,player,1);
 	}
 	player = !player;
 	remain = checkAllMoves(player,avail);
@@ -239,7 +239,27 @@ void play(){
 	}
 }
 
-
+void convertColour(Coord enemy){
+	tcolour cdif;
+	if(contClr[player]==PINK){
+		cdif = G-R;
+		debug("pink");
+	}
+	if(contClr[player]==BLUE){
+		cdif = R-G;
+		debug("blue");
+	}
+	for(tcolour c=contClr[!player]; c-CLRSPEED*cdif!=contClr[player]; c+=CLRSPEED*cdif){
+		if(contClr[player]-CLRSPEED*cdif<c){//c+CLRSPEED*cdif>contClr[player]){
+			c = contClr[player];
+			debug("in");
+		}
+		BSP_LCD_SetTextColor(c);
+		BSP_LCD_FillCircle(toPos(enemy.x)+SQSIZE/2, toPos(enemy.y)+SQSIZE/2, CIRRAD);
+		HAL_Delay(CLRDELAY);
+	}
+	debug("out");
+}
 
 void colourButton(int btn, int btnClr, int txtClr){
 	BSP_LCD_SetTextColor(btnClr);
@@ -389,6 +409,7 @@ void checkTIM(){
 
 int main(void)
 {
+
 	srand(time(NULL));
 
 	SCB_EnableICache();
@@ -423,13 +444,17 @@ int main(void)
 	while (1)
 	{
 		checkTIM();
+		Coord c;
+		c.x = 7;
+		c.y = 4;
+		//convertColour(c);
 		switch(mode){
 		case MENU:
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printMenu();
-				//printMale(BLUE);
-				//printFemale(PINK);
+				printMale(BLUE);
+				printFemale(PINK);
 				printFlag = 0;
 			}
 			checkMenuTS();
