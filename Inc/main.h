@@ -152,6 +152,7 @@ void checkTIM();
 #define PRESSEDBUTTONTXTCLR		  LCD_COLOR_WHITE
 #define SELECTEDCLR				  LCD_COLOR_DARKGRAY
 #define SELECTEDDIF			 	  SQSIZE/5
+#define ORIGOPT					 3
 
 #define LCDXCENTRE				  BSP_LCD_GetXSize()/2
 #define LCDYMAX					  BSP_LCD_GetYSize()

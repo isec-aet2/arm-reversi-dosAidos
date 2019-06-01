@@ -40,11 +40,12 @@ _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 _Bool btnLeft = 0;
 _Bool personFlag = 0;
-int menuSize = 2;
+int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
 
 State mode = MENU;
 _Bool ai;
+_Bool ai2;
 _Bool printFlag = 1;
 Content board[ROWS][COLS];
 _Bool player = PL1;
@@ -55,7 +56,7 @@ Coord avail[ROWS*COLS];
 Coord allEnemies[8];
 int remain = 0;
 
-char menuOpt[][STRSIZE] = {"Play against AI","Play against NI","Resume game"};
+char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
 
 uint32_t ConvertedValue;
 long int JTemp;
@@ -92,7 +93,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		mode = MENU;
 		//pbFlag = 1;
 		printFlag = 1;
-		menuSize = 3;
+		menuSize = ORIGOPT+1;
 //		char r[STRSIZE];
 //		sprintf(r, "%d", rand());
 //		debug(r);
@@ -226,13 +227,13 @@ void play(){
 	printBoard();
 	if(!remain){
 		//debug("END");
-		//resetBoard();
-		//mode = MENU;
-		menuSize = 2;
+		resetBoard();
+		mode = MENU;
+		menuSize = ORIGOPT;
 		printFlag = 1;
 		remain = 0;
 	}
-	if(ai && player==ai){
+	if((ai && player==ai) || ai2){
 		touch = chooseMove(avail,remain,allEnemies,player);
 		playAI(touch);
 		play();
@@ -351,13 +352,23 @@ void checkMenuTS(){
 			//colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 			mode = GAME;
 			printFlag = 1;
-			if(btn==0){
-				ai = 1;
-				resetBoard();
-			}
-			if(btn==1){
+			switch(btn){
+			case 0:
 				ai = 0;
+				ai2 = 0;
 				resetBoard();
+				break;
+			case 1:
+				ai = 1;
+				ai2 = 0;
+				resetBoard();
+				break;
+			case 2:
+				ai2 = 1;
+				resetBoard();
+				touch = chooseMove(avail,remain,allEnemies,player);
+				playAI(touch);
+				play();
 			}
 		}
 	}
@@ -439,7 +450,7 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim6);
 	HAL_ADC_Start_IT(&hadc1);
 
-	resetBoard();
+	//resetBoard();
 
 
 	while (1)
