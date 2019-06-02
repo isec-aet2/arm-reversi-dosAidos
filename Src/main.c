@@ -94,10 +94,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		//pbFlag = 1;
 		printFlag = 1;
 		menuSize = ORIGOPT+1;
-//		char r[STRSIZE];
-//		sprintf(r, "%d", rand());
-//		debug(r);
-		debug("PB");
 	}
 }
 
@@ -105,33 +101,33 @@ double toDegrees(double rad){
 	return rad*M_PI/180;
 }
 
-void analogClock(tcolour colour){
+void analogClock(tcolour colour, int centreX){
 	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
+	BSP_LCD_FillCircle(centreX, CLCKCNTRY, CLCKRAD);
 	BSP_LCD_SetTextColor(CLCKBKG);
-	BSP_LCD_FillRect(CLCKCNTRX-CLCKRAD, CLCKCNTRY-CLCKRAD, CLCKRAD, CLCKRAD);
+	BSP_LCD_FillRect(centreX-CLCKRAD, CLCKCNTRY-CLCKRAD, CLCKRAD, CLCKRAD);
 	BSP_LCD_SetTextColor(CLCKFRAME);
-	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD+1);
-	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD+2);
+	BSP_LCD_DrawCircle(centreX, CLCKCNTRY, CLCKRAD+1);
+	BSP_LCD_DrawCircle(centreX, CLCKCNTRY, CLCKRAD+2);
 }
 
-void printCountdown(double sec, tcolour colour){
+void printCountdown(double sec, tcolour colour, int centreX){
 	double angle = 360*sec/TIMEOUTSEC;
 	angle = toDegrees(angle);
 	double catX = sin(angle)*CLCKRAD;
 	double catY = cos(angle)*CLCKRAD;
 	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY-catY);
+	BSP_LCD_DrawLine(centreX, CLCKCNTRY, centreX+catX, CLCKCNTRY-catY);
 }
 
-void test(){
-	analogClock(CLCKBKG);
-	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=pow(CLOCKSPEEDBASE,-CLCKSPEED)){
-		printCountdown(i,pieceClr[!player]);
+void printClock(int centreX){
+	analogClock(CLCKBKG,centreX);
+	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=CLCKSPEED){
+		printCountdown(i,pieceClr[!player],centreX);
 	}
-	analogClock(DANGERCLR);
-	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=pow(CLOCKSPEEDBASE,-CLCKSPEED)){
-		printCountdown(i,DANGERCLR);
+	analogClock(DANGERCLR,centreX);
+	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=CLCKSPEED){
+		printCountdown(i,DANGERCLR,centreX);
 	}
 }
 
@@ -280,7 +276,7 @@ void convertColour(Coord enemy){
 
 void colourButton(int btn, int btnClr, int txtClr){
 	BSP_LCD_SetTextColor(btnClr);
-	BSP_LCD_FillEllipse(LCDXCENTRE, LCDYMAX/(menuSize+1)*(btn+1), ELIPSEX, ELIPSEY);
+	BSP_LCD_FillEllipse(LCDXCNTR, LCDYMAX/(menuSize+1)*(btn+1), ELIPSEX, ELIPSEY);
 	BSP_LCD_SetFont(&MFONT);
 	BSP_LCD_SetTextColor(txtClr);
 	BSP_LCD_SetBackColor(btnClr);
@@ -351,13 +347,13 @@ void checkMenuTS(){
 		dsFlag = 0;
 		if(personFlag){
 			if(touchClr==BLUE){
-				if(touch.x<LCDXCENTRE){
+				if(touch.x<LCDXCNTR){
 					printFemale(PINK);
 				}else{
 					printMale(PINK);
 				}
 			}else if(touchClr==PINK){
-				if(touch.x<LCDXCENTRE){
+				if(touch.x<LCDXCNTR){
 					printFemale(BLUE);
 				}else{
 					printMale(BLUE);
@@ -491,9 +487,9 @@ int main(void)
 			}
 			checkGameTS();
 			analogClock(CLCKBKG,RCLCKCNTRX);
-			test(LCLCKCNTRX);
+			printClock(LCLCKCNTRX);
 			player = !player;
-			test(RCLCKCNTRX);
+			printClock(RCLCKCNTRX);
 			player = !player;
 		}
 	}

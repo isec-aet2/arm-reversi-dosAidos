@@ -89,15 +89,16 @@ void Error_Handler(void);
 void debug(char * text);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
-void analogClock();
-void printCountdown(double sec, tcolour colour);
+void analogClock(tcolour colour, int centreX);
+void printCountdown(double sec, tcolour colour, int centreX);
+void printClock(int centreX);
 int toPos(int index);
 int toIndex(int pos);
 int toButton(int posY);
 void resetBoard();
 void printFrame();
 void printBoard();
-void funcao(Coord move);
+void playAI(Coord move);
 void play();
 void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
@@ -128,12 +129,12 @@ void checkTIM();
 #define PINK					  LCD_COLOR_MAGENTA
 #define BLUE					  LCD_COLOR_CYAN
 
-#define LCDXCENTRE				  BSP_LCD_GetXSize()/2
+#define LCDXCNTR				  BSP_LCD_GetXSize()/2
 #define LCDYMAX					  BSP_LCD_GetYSize()
 
 #define SQSIZE					55
 #define CIRRAD					20
-#define BORDERX   				  LCDXCENTRE-SQSIZE*COLS/2
+#define BORDERX   				  LCDXCNTR-SQSIZE*COLS/2
 #define BORDERY					  (LCDYMAX-SQSIZE*ROWS)/2
 #define STRSIZE				   100
 #define ELIPSEX				   150
@@ -162,11 +163,11 @@ void checkTIM();
 
 #define TIMEOUTSEC				20
 #define TIMEOUTMAX				 3
-#define CLCKCNTRX				70
-#define CLCKCNTRY				70
+#define LCLCKCNTRX			   100
+#define RCLCKCNTRX				  LCDXCNTR*2-LCLCKCNTRX
+#define CLCKCNTRY			   100
 #define CLCKRAD					50
-#define CLCKSPEED			    10
-#define	CLOCKSPEEDBASE			 2
+#define CLCKSPEED			0.0001
 #define DANGERFR			  0.75
 #define CLCKBKG					  LCD_COLOR_WHITE
 #define CLCKFRAME				  LCD_COLOR_BLACK
@@ -196,8 +197,8 @@ void checkTIM();
 #define BODYDIST			   285
 #define HEADRAD				    30
 #define HEADY				   175
-#define LHEADX				      LCDXCENTRE-BODYDIST
-#define RHEADX				      LCDXCENTRE+BODYDIST
+#define LHEADX				      LCDXCNTR-BODYDIST
+#define RHEADX				      LCDXCNTR+BODYDIST
 #define BODYHEIGHT			   150
 #define BODYWIDTH			    75
 #define BODYY					  HEADY+HEADRAD+DECAP
