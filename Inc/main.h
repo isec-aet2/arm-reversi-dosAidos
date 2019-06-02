@@ -91,6 +91,7 @@ void printFemale(tcolour colour);
 void checkMenuTS();
 void checkGameTS();
 void checkTIM();
+_Bool checkPB();
 
 /* USER CODE BEGIN EFP */
 //extern int board[ROWS][COLS];
@@ -109,13 +110,13 @@ void checkTIM();
 #define PINK					  LCD_COLOR_MAGENTA
 #define BLUE					  LCD_COLOR_CYAN
 
-#define LCDXCNTR				  BSP_LCD_GetXSize()/2
+#define LCDXCNTR				  (BSP_LCD_GetXSize()/2)
 #define LCDYMAX					  BSP_LCD_GetYSize()
 
-#define SQSIZE					55
+#define SQSIZE					50
 #define CIRRAD					20
-#define BORDERX   				  LCDXCNTR-SQSIZE*COLS/2
-#define BORDERY					  (LCDYMAX-SQSIZE*ROWS)/2
+#define BORDERX   				  (LCDXCNTR-SQSIZE*COLS/2)
+#define BORDERY					  ((LCDYMAX-SQSIZE*ROWS)/2)
 #define STRSIZE				   100
 #define ELIPSEX				   150
 #define ELIPSEY				    30
@@ -138,13 +139,13 @@ void checkTIM();
 #define PRESSEDBUTTONCLR		  LCD_COLOR_DARKGRAY
 #define PRESSEDBUTTONTXTCLR		  LCD_COLOR_WHITE
 #define SELECTEDCLR				  LCD_COLOR_DARKGRAY
-#define SELECTEDDIF			 	  SQSIZE/5
+#define SELECTEDDIF			 	  (SQSIZE/5)
 #define ORIGOPT					 3
 
 #define TIMEOUTSEC				20
 #define TIMEOUTMAX				 3
 #define LCLCKCNTRX			   100
-#define RCLCKCNTRX				  LCDXCNTR*2-LCLCKCNTRX
+#define RCLCKCNTRX				  (LCDXCNTR*2-LCLCKCNTRX)
 #define CLCKCNTRY			   100
 #define CLCKRAD					50
 #define CLCKSPEED			0.0001
@@ -177,18 +178,18 @@ void checkTIM();
 #define BODYDIST			   285
 #define HEADRAD				    30
 #define HEADY				   175
-#define LHEADX				      LCDXCNTR-BODYDIST
-#define RHEADX				      LCDXCNTR+BODYDIST
+#define LHEADX				      (LCDXCNTR-BODYDIST)
+#define RHEADX				      (LCDXCNTR+BODYDIST)
 #define BODYHEIGHT			   150
 #define BODYWIDTH			    75
-#define BODYY					  HEADY+HEADRAD+DECAP
-#define RBODYX					  RHEADX-BODYWIDTH/2
+#define BODYY					  (HEADY+HEADRAD+DECAP)
+#define RBODYX					  (RHEADX-BODYWIDTH/2)
 #define TRIP1X					  LHEADX
 #define TRIP1Y					  BODYY
-#define TRIP2X					  LHEADX-BODYWIDTH
-#define TRIP2Y					  BODYY+BODYHEIGHT
-#define TRIP3X					  LHEADX+BODYWIDTH
-#define TRIP3Y					  BODYY+BODYHEIGHT
+#define TRIP2X					  (LHEADX-BODYWIDTH)
+#define TRIP2Y					  (BODYY+BODYHEIGHT)
+#define TRIP3X					  (LHEADX+BODYWIDTH)
+#define TRIP3Y					  (BODYY+BODYHEIGHT)
 #define DECAP					10
 
 

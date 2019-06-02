@@ -55,12 +55,13 @@ Coord avail[ROWS*COLS];
 Coord allEnemies[8];
 int remain = 0;
 _Bool configFlag = 0;
+_Bool initGame = 1;
 
 char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
 
-uint32_t ConvertedValue;
-long int JTemp;
-char desc[STRSIZE];
+uint32_t convertedValue;
+long int degrees;
+char temp[STRSIZE];
 
 
 
@@ -90,10 +91,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	}
 	if(GPIO_Pin == GPIO_PIN_0){
 		BSP_LED_Toggle(LED_RED);
-		mode = MENU;
-		//pbFlag = 1;
-		printFlag = 1;
-		menuSize = ORIGOPT+1;
+		pbFlag = 1;
 	}
 }
 
@@ -140,6 +138,7 @@ int toPosY(int index){
 }
 
 int toIndexX(int pos){
+	int a = (pos-BORDERX)/SQSIZE;
 	return (pos-BORDERX)/SQSIZE;
 }
 
@@ -232,6 +231,10 @@ void playAI(Coord move){
 }
 
 void play(){
+	checkTIM();
+	if(checkPB()){
+		return;
+	}
 	board[touch.x][touch.y] = player;
 	resetArray(allEnemies,8);
 	exposeAllEnemies(touch,player,allEnemies);
@@ -326,7 +329,6 @@ void checkMenuTS(){
 		touch.y = TS_State.touchY[0];
 		touchClr = BSP_LCD_ReadPixel(touch.x, touch.y);
 		if(touchClr==BUTTONCLR || touchClr==BUTTONTXTCLR){
-			tsFlag = 0;
 			btn = toButton(touch.y);
 			colourButton(btn, PRESSEDBUTTONCLR, PRESSEDBUTTONTXTCLR);
 			personFlag = 0;
@@ -415,15 +417,28 @@ void checkTIM(){
 		timFlag = 0;
 		HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
 		if(status==HAL_OK){
-			ConvertedValue=HAL_ADC_GetValue(&hadc1);
-			JTemp = ((((ConvertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
-			sprintf(desc, "%ld degrees Celsius", JTemp);
+			convertedValue=HAL_ADC_GetValue(&hadc1);
+			degrees = ((((convertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
+			sprintf(temp, "%ld degrees Celsius", degrees);
 			BSP_LCD_SetTextColor(TEMPCLR);
 			BSP_LCD_SetBackColor(BCKGND);
 			BSP_LCD_SetFont(&TEMPFONT);
-			BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)desc, RIGHT_MODE);
+			BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)temp, RIGHT_MODE);
 		}
 	}
+}
+
+_Bool checkPB(){
+	if(pbFlag){
+		pbFlag = 0;
+		mode = MENU;
+		printFlag = 1;
+		if(initGame){
+			menuSize = ORIGOPT+1;
+		}
+		return TRUE;
+	}
+	return FALSE;
 }
 
 
@@ -463,18 +478,19 @@ void configs(){
 	BSP_LED_Init(LED_RED);
 	BSP_LED_Init(LED_GREEN);
 
-
+	configFlag = 1;
 }
 
 
 int main(void)
 {
-
-
+	if(!configFlag){
+		configs();
+	}
 
 	while (1)
 	{
-		//test();
+
 		checkTIM();
 		//BSP_LCD_LayerDefaultInit(0, uint32_t FB_Address)
 		switch(mode){
