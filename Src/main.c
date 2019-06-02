@@ -1,4 +1,3 @@
-
 #include "configs.h"
 #include "main.h"
 #include "stdio.h"
@@ -55,6 +54,7 @@ int btn;
 Coord avail[ROWS*COLS];
 Coord allEnemies[8];
 int remain = 0;
+_Bool configFlag = 0;
 
 char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
 
@@ -428,10 +428,7 @@ void checkTIM(){
 
 
 
-
-
-int main(void)
-{
+void configs(){
 	srand(time(NULL));
 
 	SCB_EnableICache();
@@ -465,6 +462,14 @@ int main(void)
 
 	BSP_LED_Init(LED_RED);
 	BSP_LED_Init(LED_GREEN);
+
+
+}
+
+
+int main(void)
+{
+
 
 
 	while (1)
