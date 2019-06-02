@@ -66,8 +66,6 @@ char desc[STRSIZE];
 
 
 
-
-
 void debug(char * text){
 	BSP_LCD_SetBackColor(BCKGND);
 	BSP_LCD_SetTextColor(LCD_COLOR_RED);
@@ -84,12 +82,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == GPIO_PIN_13){
+		BSP_LED_Toggle(LED_GREEN);
 		BSP_TS_GetState(&TS_State);
 		if(TS_State.touchDetected){
 			tsFlag = 1;
 		}
 	}
 	if(GPIO_Pin == GPIO_PIN_0){
+		BSP_LED_Toggle(LED_RED);
 		mode = MENU;
 		//pbFlag = 1;
 		printFlag = 1;
@@ -448,11 +448,14 @@ int main(void)
 	MX_FMC_Init();
 	MX_LTDC_Init();
 	MX_TIM6_Init();
+	MX_TIM7_Init();
 	MX_ADC1_Init();
 
 	BSP_LCD_Init();
 	BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER_BACKGROUND,LCD_FB_START_ADDRESS);
 	BSP_LCD_Clear(LCD_COLOR_WHITE);
+
+	BSP_PB_Init(0,1);
 
 	BSP_TS_Init(800,480);
 	BSP_TS_ITConfig();
@@ -460,7 +463,8 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim6);
 	HAL_ADC_Start_IT(&hadc1);
 
-	//resetBoard();
+	BSP_LED_Init(LED_RED);
+	BSP_LED_Init(LED_GREEN);
 
 
 	while (1)
@@ -486,11 +490,11 @@ int main(void)
 				printFlag = 0;
 			}
 			checkGameTS();
-			analogClock(CLCKBKG,RCLCKCNTRX);
-			printClock(LCLCKCNTRX);
-			player = !player;
-			printClock(RCLCKCNTRX);
-			player = !player;
+//			analogClock(CLCKBKG,RCLCKCNTRX);
+//			printClock(LCLCKCNTRX);
+//			player = !player;
+//			printClock(RCLCKCNTRX);
+//			player = !player;
 		}
 	}
 }
