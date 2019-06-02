@@ -43,7 +43,7 @@ _Bool personFlag = 0;
 int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
 
-State mode = MENU;
+State mode = NONE;
 _Bool ai;
 _Bool ai2;
 _Bool printFlag = 1;
@@ -97,29 +97,100 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 //		char r[STRSIZE];
 //		sprintf(r, "%d", rand());
 //		debug(r);
+		debug("PB");
 	}
+}
+
+double toDegrees(double rad){
+	return rad*M_PI/180;
 }
 
 void analogClock(tcolour colour){
+	debug("ac");
 	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
 	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
-	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE);
+	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD+1);
+	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD+2);
+	//BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE);
 }
 
-void printCountdown(int sec, tcolour colour){
-	int angle = 360*sec/TIMEOUTSEC;
-	int catX = CLCKRAD*(int)sin(angle);
-	int catY = CLCKRAD*(int)cos(angle);
-	if(angle>180){
-		catX *= -1;
+void printCountdown(double sec, _Bool tf){
+	debug("cd");
+	double angle = 360*sec/TIMEOUTSEC;
+	angle = toDegrees(angle);
+	double catX = sin(angle)*CLCKRAD;
+	double catY = cos(angle)*CLCKRAD;
+	if(!tf){
+		BSP_LCD_SetTextColor(pieceClr[player]);
+		BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY-catY);
+	}else{
+		HAL_Delay(5);
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
+		BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+		pPoint timeLeft;
+		Point point4;
+		point4.X = CLCKCNTRX+(int)sec;
+		point4.Y = CLCKCNTRY-(int)sec;
+		BSP_LCD_FillPolygon(createTimeLeft(timeLeft, point4.X, point4.Y), 4);
 	}
-	if(angle>90 && angle<270){
-		catY *= -1;
+}
+
+pPoint createTimeLeft(pPoint timeLeft, int x, int y){
+//	Point polp1;
+//	Point polp2;
+//	Point polp3;
+//	Point polp4;
+//	polp1.X = CLCKCNTRX;
+//	polp1.Y = CLCKCNTRY;
+//	polp2.X = CLCKCNTRX;
+//	polp2.Y = CLCKCNTRY-CLCKRAD;
+//	polp3.X = CLCKCNTRX-CLCKRAD;
+//	polp3.Y = CLCKCNTRY-CLCKRAD;
+//	polp3.X = CLCKCNTRX-CLCKRAD;
+//	polp3.Y = CLCKCNTRY-CLCKRAD;
+//	timeLeft[0] = polp1;
+//	timeLeft[1] = polp2;
+//	timeLeft[2] = polp3;
+//	timeLeft[3] = polp4;
+//	return timeLeft;
+	Point polp1;
+	Point polp2;
+	Point polp3;
+	Point polp4;
+	//Point polp4;
+	polp1.X = 20;
+	polp1.Y = 50;
+	polp2.X = 50;
+	polp2.Y = 50;
+	polp3.X = 20;
+	polp3.Y = 20;
+	polp4.X = 50;
+	polp4.Y = 20;
+	timeLeft[0] = polp1;
+	timeLeft[1] = polp2;
+	timeLeft[2] = polp3;
+	timeLeft[3] = polp4;
+	return timeLeft;
+}
+
+void test(){
+	//analogClock(PINK);
+//	for(double i=0; i<TIMEOUTSEC; i++){
+//		printCountdown(i,1);
+//	}
+	for(double i=0; i<TIMEOUTSEC; i+=0.001){
+		if(i<TIMEOUTSEC*3/4){
+			printCountdown(i,0);
+		}else{
+			printCountdown(i,1);
+			i+=0.01;
+		}
 	}
-	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY+catY);
+
+
+	debug("test");
 }
 
 int toPos(int index){
@@ -354,17 +425,18 @@ void checkMenuTS(){
 			printFlag = 1;
 			switch(btn){
 			case 0:
-				ai = 0;
+				ai = 1;
 				ai2 = 0;
 				resetBoard();
 				break;
 			case 1:
-				ai = 1;
+				ai = 0;
 				ai2 = 0;
 				resetBoard();
 				break;
 			case 2:
 				ai2 = 1;
+				BSP_LCD_Clear(BCKGND);
 				resetBoard();
 				touch = chooseMove(avail,remain,allEnemies,player);
 				playAI(touch);
@@ -405,7 +477,6 @@ void checkTIM(){
 		if(status==HAL_OK){
 			ConvertedValue=HAL_ADC_GetValue(&hadc1);
 			JTemp = ((((ConvertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
-			BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 			sprintf(desc, "%ld degrees Celsius", JTemp);
 			BSP_LCD_SetTextColor(TEMPCLR);
 			BSP_LCD_SetBackColor(BCKGND);
@@ -421,7 +492,6 @@ void checkTIM(){
 
 int main(void)
 {
-
 	srand(time(NULL));
 
 	SCB_EnableICache();
@@ -455,11 +525,9 @@ int main(void)
 
 	while (1)
 	{
+		test();
 		checkTIM();
-		Coord c;
-		c.x = 7;
-		c.y = 4;
-		//convertColour(c);
+		//BSP_LCD_LayerDefaultInit(0, uint32_t FB_Address)
 		switch(mode){
 		case MENU:
 			if(printFlag){
@@ -477,6 +545,7 @@ int main(void)
 				printBoard();
 				printFlag = 0;
 			}
+			//debug("rjkl");
 			checkGameTS();
 		}
 	}

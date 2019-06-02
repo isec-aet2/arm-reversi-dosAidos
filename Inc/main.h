@@ -90,7 +90,7 @@ void debug(char * text);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 void analogClock(tcolour colour);
-void printCountdown(int sec, tcolour colour);
+void printCountdown(double sec, _Bool tf);
 int toPos(int index);
 int toIndex(int pos);
 int toButton(int posY);
@@ -104,6 +104,7 @@ void colourButton(int btn, int btnClr, int txtClr);
 void convertColour(Coord enemy);
 void printMenu();
 pPoint createSkirt(pPoint skirt);
+pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
 void printMale(tcolour colour);
 void printFemale(tcolour colour);
 void checkMenuTS();
@@ -161,8 +162,7 @@ void checkTIM();
 #define TIMEOUTMAX				 3
 #define CLCKCNTRX				70
 #define CLCKCNTRY				70
-#define CLCKRAD					70
-#define CLCKNOSE				 3
+#define CLCKRAD					50
 
 #define ROWS 					 8
 #define COLS 					 8
