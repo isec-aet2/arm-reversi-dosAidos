@@ -89,8 +89,8 @@ void Error_Handler(void);
 void debug(char * text);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
-void analogClock(tcolour colour);
-void printCountdown(double sec, _Bool tf);
+void analogClock();
+void printCountdown(double sec, tcolour colour);
 int toPos(int index);
 int toIndex(int pos);
 int toButton(int posY);
@@ -163,6 +163,12 @@ void checkTIM();
 #define CLCKCNTRX				70
 #define CLCKCNTRY				70
 #define CLCKRAD					50
+#define CLCKSPEED			   -10
+#define	CLOCKSPEEDBASE			 2
+#define DANGERFR			  0.75
+#define CLCKBKG					  LCD_COLOR_WHITE
+#define CLCKFRAME				  LCD_COLOR_BLACK
+#define DANGERCLR				  LCD_COLOR_RED
 
 #define ROWS 					 8
 #define COLS 					 8

@@ -106,91 +106,52 @@ double toDegrees(double rad){
 }
 
 void analogClock(tcolour colour){
-	debug("ac");
-	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
 	BSP_LCD_SetTextColor(colour);
+	BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
+	BSP_LCD_SetTextColor(CLCKBKG);
+	BSP_LCD_FillRect(CLCKCNTRX-CLCKRAD, CLCKCNTRY-CLCKRAD, CLCKRAD, CLCKRAD);
+	BSP_LCD_SetTextColor(CLCKFRAME);
 	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD+1);
 	BSP_LCD_DrawCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD+2);
-	//BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKNOSE);
 }
 
-void printCountdown(double sec, _Bool tf){
-	debug("cd");
+void printCountdown(double sec, tcolour colour){
+	debug("e");
 	double angle = 360*sec/TIMEOUTSEC;
 	angle = toDegrees(angle);
 	double catX = sin(angle)*CLCKRAD;
 	double catY = cos(angle)*CLCKRAD;
-	if(!tf){
-		BSP_LCD_SetTextColor(pieceClr[player]);
+	if(1){
+		BSP_LCD_SetTextColor(colour);//(colour);
 		BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY-catY);
-	}else{
-		HAL_Delay(5);
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
-		BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-		pPoint timeLeft;
-		Point point4;
-		point4.X = CLCKCNTRX+(int)sec;
-		point4.Y = CLCKCNTRY-(int)sec;
-		BSP_LCD_FillPolygon(createTimeLeft(timeLeft, point4.X, point4.Y), 4);
 	}
+//	}else{
+//		HAL_Delay(5);
+//		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+//		BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
+//		BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+//		pPoint timeLeft;
+//		Point point4;
+//		point4.X = CLCKCNTRX+(int)sec;
+//		point4.Y = CLCKCNTRY-(int)sec;
+//		BSP_LCD_FillPolygon(createTimeLeft(timeLeft, point4.X, point4.Y), 4);
+//	}
 }
 
-pPoint createTimeLeft(pPoint timeLeft, int x, int y){
-//	Point polp1;
-//	Point polp2;
-//	Point polp3;
-//	Point polp4;
-//	polp1.X = CLCKCNTRX;
-//	polp1.Y = CLCKCNTRY;
-//	polp2.X = CLCKCNTRX;
-//	polp2.Y = CLCKCNTRY-CLCKRAD;
-//	polp3.X = CLCKCNTRX-CLCKRAD;
-//	polp3.Y = CLCKCNTRY-CLCKRAD;
-//	polp3.X = CLCKCNTRX-CLCKRAD;
-//	polp3.Y = CLCKCNTRY-CLCKRAD;
-//	timeLeft[0] = polp1;
-//	timeLeft[1] = polp2;
-//	timeLeft[2] = polp3;
-//	timeLeft[3] = polp4;
-//	return timeLeft;
-	Point polp1;
-	Point polp2;
-	Point polp3;
-	Point polp4;
-	//Point polp4;
-	polp1.X = 20;
-	polp1.Y = 50;
-	polp2.X = 50;
-	polp2.Y = 50;
-	polp3.X = 20;
-	polp3.Y = 20;
-	polp4.X = 50;
-	polp4.Y = 20;
-	timeLeft[0] = polp1;
-	timeLeft[1] = polp2;
-	timeLeft[2] = polp3;
-	timeLeft[3] = polp4;
-	return timeLeft;
-}
+//double pau++()
 
 void test(){
-	//analogClock(PINK);
-//	for(double i=0; i<TIMEOUTSEC; i++){
-//		printCountdown(i,1);
-//	}
-	for(double i=0; i<TIMEOUTSEC; i+=0.001){
-		if(i<TIMEOUTSEC*3/4){
-			printCountdown(i,0);
-		}else{
-			printCountdown(i,1);
-			i+=0.01;
-		}
+	analogClock(CLCKBKG);
+	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=0.001){//pow(CLOCKSPEEDBASE,-CLCKSPEED)){
+		printCountdown(i,pieceClr[!player]);
 	}
-
-
-	debug("test");
+	analogClock(DANGERCLR);
+//	char test[20];
+//	sprintf(test,"%d", (int)(pow(2,-10)*10000));
+//	debug(test);
+	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=0.001){//pow(CLOCKSPEEDBASE,-CLCKSPEED)){
+		printCountdown(i,DANGERCLR);
+	}
 }
 
 int toPos(int index){
