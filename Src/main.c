@@ -43,7 +43,7 @@ _Bool personFlag = 0;
 int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
 
-State mode = NONE;
+State mode = MENU;
 _Bool ai;
 _Bool ai2;
 _Bool printFlag = 1;
@@ -116,50 +116,39 @@ void analogClock(tcolour colour){
 }
 
 void printCountdown(double sec, tcolour colour){
-	debug("e");
 	double angle = 360*sec/TIMEOUTSEC;
 	angle = toDegrees(angle);
 	double catX = sin(angle)*CLCKRAD;
 	double catY = cos(angle)*CLCKRAD;
-	if(1){
-		BSP_LCD_SetTextColor(colour);//(colour);
-		BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY-catY);
-	}
-//	}else{
-//		HAL_Delay(5);
-//		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-//		BSP_LCD_FillCircle(CLCKCNTRX, CLCKCNTRY, CLCKRAD);
-//		BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-//		pPoint timeLeft;
-//		Point point4;
-//		point4.X = CLCKCNTRX+(int)sec;
-//		point4.Y = CLCKCNTRY-(int)sec;
-//		BSP_LCD_FillPolygon(createTimeLeft(timeLeft, point4.X, point4.Y), 4);
-//	}
+	BSP_LCD_SetTextColor(colour);
+	BSP_LCD_DrawLine(CLCKCNTRX, CLCKCNTRY, CLCKCNTRX+catX, CLCKCNTRY-catY);
 }
-
-//double pau++()
 
 void test(){
 	analogClock(CLCKBKG);
-	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=0.001){//pow(CLOCKSPEEDBASE,-CLCKSPEED)){
+	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=pow(CLOCKSPEEDBASE,-CLCKSPEED)){
 		printCountdown(i,pieceClr[!player]);
 	}
 	analogClock(DANGERCLR);
-//	char test[20];
-//	sprintf(test,"%d", (int)(pow(2,-10)*10000));
-//	debug(test);
-	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=0.001){//pow(CLOCKSPEEDBASE,-CLCKSPEED)){
+	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=pow(CLOCKSPEEDBASE,-CLCKSPEED)){
 		printCountdown(i,DANGERCLR);
 	}
 }
 
-int toPos(int index){
-	return SQSIZE*index+BORDER;
+int toPosX(int index){
+	return SQSIZE*index+BORDERX;
 }
 
-int toIndex(int pos){
-	return (pos-BORDER)/SQSIZE;
+int toPosY(int index){
+	return SQSIZE*index+BORDERY;
+}
+
+int toIndexX(int pos){
+	return (pos-BORDERX)/SQSIZE;
+}
+
+int toIndexY(int pos){
+	return (pos-BORDERY)/SQSIZE;
 }
 
 int toButton(int posY){
@@ -182,29 +171,28 @@ void resetBoard(){
 }
 
 void printFrame(){
-	BSP_LCD_SetTextColor(BCKGND);
-	BSP_LCD_FillRect(0, 0, SQSIZE*ROWS+2*BORDER, BORDER);
-	BSP_LCD_FillRect(0, 0, BORDER, SQSIZE*COLS+2*BORDER);
-	BSP_LCD_FillRect(0, SQSIZE*COLS+BORDER+1, SQSIZE*ROWS+2*BORDER, BORDER);
-	BSP_LCD_FillRect(SQSIZE*ROWS+BORDER+1, 0, BORDER, SQSIZE*COLS+2*BORDER);
+	BSP_LCD_SetTextColor(FRAMECLR);
+	BSP_LCD_FillRect(BORDERX-SELECTEDDIF, BORDERY-SELECTEDDIF, SQSIZE*ROWS+2*SELECTEDDIF, SELECTEDDIF);
+	BSP_LCD_FillRect(BORDERX-SELECTEDDIF, BORDERY-SELECTEDDIF, SELECTEDDIF, SQSIZE*COLS+2*SELECTEDDIF);
+	BSP_LCD_FillRect(BORDERX-SELECTEDDIF, SQSIZE*COLS+BORDERY+1, SQSIZE*ROWS+2*SELECTEDDIF, SELECTEDDIF);
+	BSP_LCD_FillRect(SQSIZE*ROWS+BORDERX+1, BORDERY-SELECTEDDIF, SELECTEDDIF, SQSIZE*COLS+2*SELECTEDDIF);
 }
 
 void printBoard(){
 	Content sq;
 	BSP_LCD_SetTextColor(BOARDCLR);
-	BSP_LCD_FillRect(BORDER, BORDER, SQSIZE*ROWS, SQSIZE*COLS);
+	BSP_LCD_FillRect(BORDERX, BORDERY, SQSIZE*ROWS, SQSIZE*COLS);
 	for(int i=0; i<ROWS; i++){
 		for(int j=0; j<COLS; j++){
 			sq = board[i][j];
 			BSP_LCD_SetTextColor(GRIDCLR);
-			BSP_LCD_DrawRect(toPos(i), toPos(j), SQSIZE, SQSIZE);
+			BSP_LCD_DrawRect(toPosX(i), toPosY(j), SQSIZE, SQSIZE);
 			if(sq<=PL2){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
-				BSP_LCD_FillCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
-				//continue;
+				BSP_LCD_FillCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
 			}else if(sq==player+EDIF){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
-				BSP_LCD_DrawCircle(toPos(i)+SQSIZE/2.0, toPos(j)+SQSIZE/2.0, CIRRAD);
+				BSP_LCD_DrawCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
 			}
 		}
 	}
@@ -213,12 +201,12 @@ void printBoard(){
 
 void selectSq(Coord sq){
 	BSP_LCD_SetTextColor(SELECTEDCLR);
-	BSP_LCD_FillRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
+	BSP_LCD_FillRect(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
 	BSP_LCD_SetTextColor(GRIDCLR);
-	BSP_LCD_DrawRect(toPos(sq.x)-SELECTEDDIF/2, toPos(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
+	BSP_LCD_DrawRect(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
 	if(board[sq.x][sq.y]!=EMPTY){
 		BSP_LCD_SetTextColor(pieceClr[board[sq.x][sq.y]]);
-	BSP_LCD_FillCircle(toPos(sq.x)+SQSIZE/2.0, toPos(sq.y)+SQSIZE/2.0, CIRRAD);
+	BSP_LCD_FillCircle(toPosX(sq.x)+SQSIZE/2.0, toPosY(sq.y)+SQSIZE/2.0, CIRRAD);
 	}
 }
 
@@ -258,7 +246,6 @@ void play(){
 	remain = checkAllMoves(player,avail);
 	printBoard();
 	if(!remain){
-		//debug("END");
 		resetBoard();
 		mode = MENU;
 		menuSize = ORIGOPT;
@@ -276,23 +263,19 @@ void convertColour(Coord enemy){
 	int sign;
 	if(pieceClr[player]==PINK){
 		sign = 1;
-		//debug("pink");
 	}
 	if(pieceClr[player]==BLUE){
 		sign = -1;
-		//debug("blue");
 	}
 	int inc = sign*(G-R)*CLRSPEED;
 	for(tcolour c=pieceClr[!player]; c-inc!=pieceClr[player]; c+=inc){
 		if(sign*(signed int)pieceClr[player]+inc<(signed int)sign*c){
 			c = pieceClr[player];
-			//debug("in");
 		}
 		BSP_LCD_SetTextColor(c);
-		BSP_LCD_FillCircle(toPos(enemy.x)+SQSIZE/2, toPos(enemy.y)+SQSIZE/2, CIRRAD);
+		BSP_LCD_FillCircle(toPosX(enemy.x)+SQSIZE/2, toPosY(enemy.y)+SQSIZE/2, CIRRAD);
 		HAL_Delay(CLRDELAY);
 	}
-	//debug("out");
 }
 
 void colourButton(int btn, int btnClr, int txtClr){
@@ -410,8 +393,8 @@ void checkMenuTS(){
 void checkGameTS(){
 	if(tsFlag){
 		tsFlag = 0;
-		touch.x = toIndex(TS_State.touchX[0]);
-		touch.y = toIndex(TS_State.touchY[0]);
+		touch.x = toIndexX(TS_State.touchX[0]);
+		touch.y = toIndexY(TS_State.touchY[0]);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
 			if(touch.x!=prev.x || touch.y!=prev.y){
 				printBoard();
@@ -486,7 +469,7 @@ int main(void)
 
 	while (1)
 	{
-		test();
+		//test();
 		checkTIM();
 		//BSP_LCD_LayerDefaultInit(0, uint32_t FB_Address)
 		switch(mode){

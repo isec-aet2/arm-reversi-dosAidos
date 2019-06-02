@@ -128,9 +128,13 @@ void checkTIM();
 #define PINK					  LCD_COLOR_MAGENTA
 #define BLUE					  LCD_COLOR_CYAN
 
+#define LCDXCENTRE				  BSP_LCD_GetXSize()/2
+#define LCDYMAX					  BSP_LCD_GetYSize()
+
 #define SQSIZE					55
 #define CIRRAD					20
-#define BORDER					  (LCDYMAX-SQSIZE*ROWS)/2
+#define BORDERX   				  LCDXCENTRE-SQSIZE*COLS/2
+#define BORDERY					  (LCDYMAX-SQSIZE*ROWS)/2
 #define STRSIZE				   100
 #define ELIPSEX				   150
 #define ELIPSEY				    30
@@ -147,6 +151,7 @@ void checkTIM();
 #define CLRSPEED			     1
 
 #define BCKGND					  LCD_COLOR_WHITE
+#define FRAMECLR				  LCD_COLOR_GRAY
 #define BUTTONCLR				  LCD_COLOR_LIGHTGRAY
 #define BUTTONTXTCLR			  LCD_COLOR_BLACK
 #define PRESSEDBUTTONCLR		  LCD_COLOR_DARKGRAY
@@ -155,15 +160,12 @@ void checkTIM();
 #define SELECTEDDIF			 	  SQSIZE/5
 #define ORIGOPT					 3
 
-#define LCDXCENTRE				  BSP_LCD_GetXSize()/2
-#define LCDYMAX					  BSP_LCD_GetYSize()
-
 #define TIMEOUTSEC				20
 #define TIMEOUTMAX				 3
 #define CLCKCNTRX				70
 #define CLCKCNTRY				70
 #define CLCKRAD					50
-#define CLCKSPEED			   -10
+#define CLCKSPEED			    10
 #define	CLOCKSPEEDBASE			 2
 #define DANGERFR			  0.75
 #define CLCKBKG					  LCD_COLOR_WHITE
