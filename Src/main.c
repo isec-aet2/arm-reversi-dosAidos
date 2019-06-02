@@ -489,8 +489,12 @@ int main(void)
 				printBoard();
 				printFlag = 0;
 			}
-			//debug("rjkl");
 			checkGameTS();
+			analogClock(CLCKBKG,RCLCKCNTRX);
+			test(LCLCKCNTRX);
+			player = !player;
+			test(RCLCKCNTRX);
+			player = !player;
 		}
 	}
 }
