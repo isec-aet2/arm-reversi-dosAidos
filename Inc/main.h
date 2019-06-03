@@ -64,13 +64,8 @@ typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
+//void Error_Handler(void);
 void debug(char * text);
-int toPosX(int index);
-int toPosY(int index);
-int toIndexX(int pos);
-int toIndexY(int pos);
-int toButton(int posY);
 void resetBoard();
 void printFrame();
 void printBoard();
