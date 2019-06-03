@@ -9,26 +9,37 @@
 #include "stm32f769i_discovery_ts.h"
 #include "proj1.h"
 
-#ifndef _Coord_
-#define _Coord_
+#ifndef _ST_
+#define _ST_
+
+//typedef int tcolour;
+//typedef enum _state {MENU,GAME} State;
+//typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
 
 typedef struct _coord{
 	int x;
 	int y;
 }Coord;
 
-typedef struct _game{
-	int number;
-	_Bool winner;
-	int time;
-}Game;
+typedef struct _time{
+	int sec;
+	int min;
+	int hour;
+}Time;
 
-typedef int tcolour;
-typedef enum _state {MENU,GAME} State;
-typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
+
 
 #endif
 
+typedef struct _game{
+	//Time totalTime;
+	//Time playerTime[2];
+	char playerName[2][STRSIZE];
+	int score[2];
+	int nPossMoves[2];
+	int nTimeOut[2];
+	Bool player;
+}Game;
 
 tcolour pieceClr[] = {PINK,BLUE,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
 
@@ -47,7 +58,6 @@ _Bool ai;
 _Bool ai2;
 _Bool printFlag = 1;
 Content board[ROWS][COLS];
-_Bool player = PL1;
 Coord touch;
 Coord prev;
 int btn;
@@ -56,6 +66,20 @@ Coord allEnemies[8];
 int remain = 0;
 _Bool configFlag = 0;
 _Bool initGame = 1;
+
+#ifdef _ST_
+
+struct _game gameX;
+//game.totalTime = 0;
+//game.playerTime = {0,0};
+game.playerName = {"Pink","Blue"};
+game.score = {2,2};
+game.nPossMoves = {4,4};
+game.nTimeOut = {0,0};
+game.player = PL1;
+
+#endif
+
 
 char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
 
@@ -76,6 +100,9 @@ void debug(char * text){
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 	if(htim -> Instance == TIM6){
+
+	}
+	if(htim -> Instance == TIM7){
 		timCount++;
 		timFlag = 1;
 	}
@@ -121,12 +148,13 @@ void printCountdown(double sec, tcolour colour, int centreX){
 void printClock(int centreX){
 	analogClock(CLCKBKG,centreX);
 	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=CLCKSPEED){
-		printCountdown(i,pieceClr[!player],centreX);
+		printCountdown(i,pieceClr[!game.player],centreX);
 	}
 	analogClock(DANGERCLR,centreX);
 	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=CLCKSPEED){
 		printCountdown(i,DANGERCLR,centreX);
 	}
+	analogClock(CLCKBKG,centreX);
 }
 
 int toPosX(int index){
@@ -150,6 +178,15 @@ int toButton(int posY){
 	return posY*menuSize/LCDYMAX;
 }
 
+Time toTime(int total){
+	Time time;
+	time.hour = (total%60)%60;
+	total /= 60;
+	time.min = total%60;
+	time.sec = total/60;
+	return time;
+}
+
 void resetBoard(){
 	for(int i=0; i<ROWS; i++){
 		for(int j=0; j<COLS; j++){
@@ -162,7 +199,7 @@ void resetBoard(){
 			}
 		}
 	}
-	checkAllMoves(player,avail);
+	checkAllMoves(game.player,avail);
 }
 
 void printFrame(){
@@ -185,13 +222,17 @@ void printBoard(){
 			if(sq<=PL2){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_FillCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
-			}else if(sq==player+EDIF){
+			}else if(sq==game.player+EDIF){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_DrawCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
 			}
 		}
 	}
 	printFrame();
+}
+
+void printInfo(){
+	sprintf(game.)
 }
 
 void selectSq(Coord sq){
@@ -235,14 +276,14 @@ void play(){
 	if(checkPB()){
 		return;
 	}
-	board[touch.x][touch.y] = player;
+	board[touch.x][touch.y] = game.player;
 	resetArray(allEnemies,8);
-	exposeAllEnemies(touch,player,allEnemies);
+	exposeAllEnemies(touch,game.player,allEnemies);
 	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-		theConverter(allEnemies[i],touch,player,1);
+		theConverter(allEnemies[i],touch,game.player,1);
 	}
-	player = !player;
-	remain = checkAllMoves(player,avail);
+	game.player = !game.player;
+	remain = checkAllMoves(game.player,avail);
 	printBoard();
 	if(!remain){
 		resetBoard();
@@ -251,8 +292,8 @@ void play(){
 		printFlag = 1;
 		remain = 0;
 	}
-	if((ai && player==ai) || ai2){
-		touch = chooseMove(avail,remain,allEnemies,player);
+	if((ai && game.player==ai) || ai2){
+		touch = chooseMove(avail,remain,allEnemies,game.player);
 		playAI(touch);
 		play();
 	}
@@ -260,16 +301,16 @@ void play(){
 
 void convertColour(Coord enemy){
 	int sign;
-	if(pieceClr[player]==PINK){
+	if(pieceClr[game.player]==PINK){
 		sign = 1;
 	}
-	if(pieceClr[player]==BLUE){
+	if(pieceClr[game.player]==BLUE){
 		sign = -1;
 	}
 	int inc = sign*(G-R)*CLRSPEED;
-	for(tcolour c=pieceClr[!player]; c-inc!=pieceClr[player]; c+=inc){
-		if(sign*(signed int)pieceClr[player]+inc<(signed int)sign*c){
-			c = pieceClr[player];
+	for(tcolour c=pieceClr[!game.player]; c-inc!=pieceClr[game.player]; c+=inc){
+		if(sign*(signed int)pieceClr[game.player]+inc<(signed int)sign*c){
+			c = pieceClr[game.player];
 		}
 		BSP_LCD_SetTextColor(c);
 		BSP_LCD_FillCircle(toPosX(enemy.x)+SQSIZE/2, toPosY(enemy.y)+SQSIZE/2, CIRRAD);
@@ -380,7 +421,7 @@ void checkMenuTS(){
 				ai2 = 1;
 				BSP_LCD_Clear(BCKGND);
 				resetBoard();
-				touch = chooseMove(avail,remain,allEnemies,player);
+				touch = chooseMove(avail,remain,allEnemies,game.player);
 				playAI(touch);
 				play();
 			}
@@ -406,7 +447,7 @@ void checkGameTS(){
 	}else if(dsFlag){
 		printBoard();
 		dsFlag = 0;
-		if(board[touch.x][touch.y]==player+EDIF){
+		if(board[touch.x][touch.y]==game.player+EDIF){
 			play();
 		}
 	}
@@ -415,16 +456,19 @@ void checkGameTS(){
 void checkTIM(){
 	if(timFlag){
 		timFlag = 0;
-		HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
-		if(status==HAL_OK){
-			convertedValue=HAL_ADC_GetValue(&hadc1);
-			degrees = ((((convertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
-			sprintf(temp, "%ld degrees Celsius", degrees);
-			BSP_LCD_SetTextColor(TEMPCLR);
-			BSP_LCD_SetBackColor(BCKGND);
-			BSP_LCD_SetFont(&TEMPFONT);
-			BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)temp, RIGHT_MODE);
+		if(timCount%2){
+			HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
+			if(status==HAL_OK){
+				convertedValue=HAL_ADC_GetValue(&hadc1);
+				degrees = ((((convertedValue * VREF)/MAX_CONVERTED_VALUE) - VSENS_AT_AMBIENT_TEMP) * 10 / AVG_SLOPE) + AMBIENT_TEMP;
+				sprintf(temp, "%ld degrees Celsius", degrees);
+				BSP_LCD_SetTextColor(TEMPCLR);
+				BSP_LCD_SetBackColor(BCKGND);
+				BSP_LCD_SetFont(&TEMPFONT);
+				BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)temp, RIGHT_MODE);
+			}
 		}
+		totalTime++;
 	}
 }
 
@@ -473,6 +517,7 @@ void configs(){
 	BSP_TS_ITConfig();
 
 	HAL_TIM_Base_Start_IT(&htim6);
+	HAL_TIM_Base_Start_IT(&htim7);
 	HAL_ADC_Start_IT(&hadc1);
 
 	BSP_LED_Init(LED_RED);
@@ -492,7 +537,6 @@ int main(void)
 	{
 
 		checkTIM();
-		//BSP_LCD_LayerDefaultInit(0, uint32_t FB_Address)
 		switch(mode){
 		case MENU:
 			if(printFlag){
@@ -513,9 +557,10 @@ int main(void)
 			checkGameTS();
 //			analogClock(CLCKBKG,RCLCKCNTRX);
 //			printClock(LCLCKCNTRX);
-//			player = !player;
+//			game.player = !game.player;
+//			//analogClock(CLCKBKG,RCLCKCNTRX);
 //			printClock(RCLCKCNTRX);
-//			player = !player;
+//			game.player = !game.player;
 		}
 	}
 }

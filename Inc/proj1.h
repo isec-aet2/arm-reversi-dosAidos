@@ -1,8 +1,8 @@
 
 #include "main.h"
 
-#ifndef _Coord_
-#define _Coord_
+#ifndef _ST_
+#define _ST_
 
 typedef struct _coord{
 	int x;
