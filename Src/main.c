@@ -472,7 +472,7 @@ void checkGameTS(){
 		tsFlag = 0;
 		touch.x = toIndexX(TS_State.touchX[0]);
 		touch.y = toIndexY(TS_State.touchY[0]);
-		tcolour pixClr = BSP_LCD_ReadPixel(toIndexX(TS_State.touchX[0], toIndexY(TS_State.touchY[0]));
+		tcolour pixClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
 			if(touch.x!=prev.x || touch.y!=prev.y){
 				printBoard();
@@ -621,7 +621,7 @@ int main(void)
 
 	while (1)
 	{
-
+		checkPB();
 		checkTIM6();
 		checkTIM7();
 		switch(mode){
