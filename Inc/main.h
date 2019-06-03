@@ -22,6 +22,8 @@
 #include "clocks.h"
 #include "converters.h"
 #include "display.h"
+#include "game.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -62,14 +64,9 @@ typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-//void Error_Handler(void);
+
 void debug(char * text);
-void resetBoard();
-
-void playAI(Coord move);
-void play();
-void swapPlayer();
-
+void configs();
 
 
 /* USER CODE BEGIN EFP */
