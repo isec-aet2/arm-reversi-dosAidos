@@ -174,7 +174,7 @@ _Bool checkPB();
 #define CLCKRAD					50
 #define CLCKSPEED			0.0001
 #define DANGERFR			  0.75
-#define CLCKBKG					  LCD_COLOR_WHITE
+#define CLCKBKG					  (LCD_COLOR_WHITE-1)
 #define CLCKFRAME				  LCD_COLOR_BLACK
 #define DANGERCLR				  LCD_COLOR_RED
 

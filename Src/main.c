@@ -481,7 +481,7 @@ void checkGameTS(){
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
-		}else if(pixClr==pieceClr[PL1] || pixClr==pieceClr[PL2] || pixClr==DANGERCLR){
+		}else if(pixClr==pieceClr[PL1] || pixClr==pieceClr[PL2] || pixClr==DANGERCLR || pixClr==CLCKBKG || pixClr==CLCKFRAME){
 			restartClock();
 		}
 		HAL_Delay(TOUCHDELAY);
@@ -521,9 +521,9 @@ void checkTIM6(){
 			analogClock(CLCKBKG,RCLCKCNTRX);}
 		if(clockAn<15){
 			if(player == PL1)
-				printCountdown(clockAn,pieceClr[PL1]-1,LCLCKCNTRX);
+				printCountdown(clockAn,pieceClr[PL1],LCLCKCNTRX);
 			if(player == PL2)
-				printCountdown(clockAn,pieceClr[PL2]-1,RCLCKCNTRX);
+				printCountdown(clockAn,pieceClr[PL2],RCLCKCNTRX);
 			redFlag = 1;
 		}else if(clockAn<20){
 			if(player == PL1){
