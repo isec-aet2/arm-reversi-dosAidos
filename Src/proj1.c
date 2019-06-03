@@ -46,7 +46,7 @@ int checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
 	int n = 0;
     for(int i=0; i<ROWS; i++){
         for(int j=0; j<COLS; j++){
-            if(board[i][j] > PL2){//== EMPTY{
+            if(board[i][j] > BLUE){//== EMPTY{
             	Coord empty;
             	empty.x = i;
             	empty.y = j;
@@ -93,7 +93,7 @@ _Bool checkTrapped(_Bool player, Coord empty, Coord enemy){ //checks if the enem
     	diag.y = mult*enemy.y+empty.y;
         if (diag.x<0 || diag.x>=ROWS || diag.y<0 || diag.y>=COLS ) //stops from crossing the matrix's borders
             return FALSE;
-        if (board[diag.x][diag.y] > PL2) //returns false if after the enemy's pieces the next space is empty
+        if (board[diag.x][diag.y] > BLUE) //returns false if after the enemy's pieces the next space is empty
             return FALSE;
         if (board[diag.x][diag.y] == player) //returns true if a player's piece is found
             return TRUE;

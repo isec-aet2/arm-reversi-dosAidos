@@ -50,34 +50,28 @@ typedef struct _coord{
 	int y;
 }Coord;
 
-typedef struct _time{
-	int sec;
-	int min;
-	int hour;
-}Time;
 
-typedef struct _game{
-	Time totalTime;
-	Time playerTime[2];
-	char playerName[2][STRSIZE];
-	int score[2];
-	int nPossMoves[2];
-	int nTimeOut[2];
-	Content player;
-}Game;
+
+
 
 
 #endif
 
 typedef uint32_t tcolour;
 typedef enum _state {MENU,GAME,NONE} State;
-typedef enum _content {PL1,PL2,E1,E2,EMPTY} Content;
+typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 
 
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+typedef struct _time{
+	int sec;
+	int min;
+	int hour;
+}Time;
+
 
 /* USER CODE END EC */
 
@@ -131,8 +125,8 @@ _Bool checkPB();
 #define AVG_SLOPE               25
 #define VREF                  3300
 
-#define PINK					  LCD_COLOR_MAGENTA
-#define BLUE					  LCD_COLOR_CYAN
+#define PINKCLR					  LCD_COLOR_MAGENTA
+#define BLUECLR					  LCD_COLOR_CYAN
 
 #define LCDXCNTR				  (BSP_LCD_GetXSize()/2)
 #define LCDYMAX					  BSP_LCD_GetYSize()
@@ -182,17 +176,17 @@ _Bool checkPB();
 #define COLS 					 8
 #define NOCOORD 				-2
 //#define EMPTY					-1
-//#define PL1					 0
-//#define PL2					 1
-//#define E1					 2
-//#define E2					 3
-#define EDIF					  E1-PL1
+//#define PINK					 0
+//#define BLUE					 1
+//#define PINKAVAIL					 2
+//#define BLUEAVAIL					 3
+#define EDIF					  PINKAVAIL-PINK
 #define TRUE 					 1
 #define FALSE 					 0
-#define PL1CLR					  PINK
-#define PL2CLR					  BLUE
-#define E1CLR					  LCD_COLOR_DARKMAGENTA
-#define E2CLR					  LCD_COLOR_DARKCYAN
+//#define PINKCLR					  PINKCLR
+//#define BLUECLR					  BLUECLR
+#define PINKAVAILCLR					  LCD_COLOR_DARKMAGENTA
+#define BLUEAVAILCLR					  LCD_COLOR_DARKCYAN
 #define BOARDCLR				  LCD_COLOR_BLACK
 #define GRIDCLR					  LCD_COLOR_WHITE
 
@@ -218,6 +212,18 @@ _Bool checkPB();
 
 
 extern Content board[ROWS][COLS];
+
+typedef struct _game{
+	//Time totalTime;
+	//Time playerTime[2];
+	int totalTime;
+	int playerTime[2];
+	char playerName[2][STRSIZE];
+	int score[2];
+	int nPossMoves[2];
+	int nTimeOut[2];
+	Content player;
+}Game;
 /* USER CODE END Private defines */
 
 
