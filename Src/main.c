@@ -78,6 +78,7 @@ _Bool configFlag = 0;
 _Bool initGame = 1;
 _Bool clockFlag = 0;
 double clockAn = 0;
+_Bool redFlag = 0;
 
 #ifdef _ST_
 
@@ -480,7 +481,9 @@ void checkGameTS(){
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
-		}else if(pixClr==pieceClr[PL1] || pixClr==pieceClr[PL2] || pixClr==DANGERCLR)
+		}else if(pixClr==pieceClr[PL1] || pixClr==pieceClr[PL2] || pixClr==DANGERCLR){
+			restartClock();
+		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		printBoard();
@@ -521,12 +524,20 @@ void checkTIM6(){
 				printCountdown(clockAn,pieceClr[PL1]-1,LCLCKCNTRX);
 			if(player == PL2)
 				printCountdown(clockAn,pieceClr[PL2]-1,RCLCKCNTRX);
+			redFlag = 1;
 		}else if(clockAn<20){
 			if(player == PL1){
-				analogClock(DANGERCLR,LCLCKCNTRX);
+				if(redFlag){
+					redFlag = 0;
+					analogClock(DANGERCLR,LCLCKCNTRX);
+				}
+
 				printCountdown(clockAn,DANGERCLR,LCLCKCNTRX);}
 			if(player == PL2){
-				analogClock(DANGERCLR,LCLCKCNTRX);
+				if(redFlag){
+					redFlag = 0;
+					analogClock(DANGERCLR,RCLCKCNTRX);
+				}
 				printCountdown(clockAn,DANGERCLR,RCLCKCNTRX);
 			}
 
