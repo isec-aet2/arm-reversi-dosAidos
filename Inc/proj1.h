@@ -1,6 +1,7 @@
 
 #include "main.h"
 
+
 #ifndef _ST_
 #define _ST_
 
@@ -8,6 +9,22 @@ typedef struct _coord{
 	int x;
 	int y;
 }Coord;
+
+//typedef struct _time{
+//	int sec;
+//	int min;
+//	int hour;
+//}Time;
+//
+//typedef struct _game{
+//	Time totalTime;
+//	Time playerTime[2];
+//	char playerName[2][STRSIZE];
+//	int score[2];
+//	int nPossMoves[2];
+//	int nTimeOut[2];
+//	Content player;
+//}Game;
 
 #endif
 

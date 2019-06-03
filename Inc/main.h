@@ -34,6 +34,8 @@ LTDC_HandleTypeDef hltdc;
 
 TIM_HandleTypeDef htim6;
 
+TIM_HandleTypeDef htim7;
+
 SDRAM_HandleTypeDef hsdram1;
 
 
@@ -54,15 +56,15 @@ typedef struct _time{
 	int hour;
 }Time;
 
-//typedef struct _game{
-//	Time totalTime;
-//	Time playerTime[2];
-//	char playerName[2][STRSIZE];
-//	int score[2];
-//	int nPossMoves[2];
-//	int nTimeOut[2];
-//	Content player;
-//}Game;
+typedef struct _game{
+	Time totalTime;
+	Time playerTime[2];
+	char playerName[2][STRSIZE];
+	int score[2];
+	int nPossMoves[2];
+	int nTimeOut[2];
+	Content player;
+}Game;
 
 
 #endif
@@ -100,6 +102,7 @@ void printFrame();
 void printBoard();
 void playAI(Coord move);
 void play();
+void swapPlayer();
 void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
 void convertColour(Coord enemy);
@@ -110,7 +113,8 @@ void printMale(tcolour colour);
 void printFemale(tcolour colour);
 void checkMenuTS();
 void checkGameTS();
-void checkTIM();
+void checkTIM6();
+void checkTIM7();
 _Bool checkPB();
 
 /* USER CODE BEGIN EFP */

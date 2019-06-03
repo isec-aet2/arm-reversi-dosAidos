@@ -21,25 +21,35 @@ typedef struct _coord{
 	int y;
 }Coord;
 
-typedef struct _time{
-	int sec;
-	int min;
-	int hour;
-}Time;
+//typedef struct _time{
+//	int sec;
+//	int min;
+//	int hour;
+//}Time;
+
+//typedef struct __game{
+	//Time totalTime;
+	//Time playerTime[2];
+//	char playerName[2][STRSIZE];
+//	int score[2];
+//	int nPossMoves[2];
+//	int nTimeOut[2];
+//	_Bool player;
+//}GameInfo;
 
 
 
 #endif
 
-typedef struct _game{
-	//Time totalTime;
-	//Time playerTime[2];
-	char playerName[2][STRSIZE];
-	int score[2];
-	int nPossMoves[2];
-	int nTimeOut[2];
-	Bool player;
-}Game;
+//typedef struct _game{
+//	//Time totalTime;
+//	//Time playerTime[2];
+//	//char playerName[2][STRSIZE];
+//	int score[2];
+//	int nPossMoves[2];
+//	int nTimeOut[2];
+//	int player;
+//}Game;
 
 tcolour pieceClr[] = {PINK,BLUE,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
 
@@ -71,14 +81,22 @@ double clockAn = 0;
 
 #ifdef _ST_
 
-struct _game game;
+//struct _game game;
 //game.totalTime = 0;
-//game.playerTime = {0,0};
-game.playerName = {"Pink","Blue"};
-game.score = {2,2};
-game.nPossMoves = {4,4};
-game.nTimeOut = {0,0};
-game.player = PL1;
+//playerTime = {0,0};
+//playerName = {"Pink","Blue"};
+//char playerName[2][STRSIZE];
+//int score[2];
+//int nPossMoves[2];
+//int nTimeOut[2];
+//_Bool player;
+
+int totalTime = 0;
+int playerTime[] = {0,0};
+int score[] = {2,2};
+int nPossMoves[] = {4,4};
+int nTimeOut[] = {0,0};
+Content player = PL1;
 
 #endif
 
@@ -151,7 +169,7 @@ void printCountdown(double sec, tcolour colour, int centreX){
 void printClock(int centreX){
 	analogClock(CLCKBKG,centreX);
 	for(double i=0; i<TIMEOUTSEC*DANGERFR; i+=CLCKSPEED){
-		printCountdown(i,pieceClr[!game.player],centreX);
+		printCountdown(i,pieceClr[!player],centreX);
 	}
 	analogClock(DANGERCLR,centreX);
 	for(double i=TIMEOUTSEC*(double)DANGERFR; i<TIMEOUTSEC; i+=CLCKSPEED){
@@ -169,7 +187,6 @@ int toPosY(int index){
 }
 
 int toIndexX(int pos){
-	int a = (pos-BORDERX)/SQSIZE;
 	return (pos-BORDERX)/SQSIZE;
 }
 
@@ -181,14 +198,14 @@ int toButton(int posY){
 	return posY*menuSize/LCDYMAX;
 }
 
-Time toTime(int total){
-	Time time;
-	time.hour = (total%60)%60;
-	total /= 60;
-	time.min = total%60;
-	time.sec = total/60;
-	return time;
-}
+//Time toTime(int total){
+//	Time time;
+//	time.hour = (total%60)%60;
+//	total /= 60;
+//	time.min = total%60;
+//	time.sec = total/60;
+//	return time;
+//}
 
 void resetBoard(){
 	for(int i=0; i<ROWS; i++){
@@ -202,7 +219,7 @@ void resetBoard(){
 			}
 		}
 	}
-	checkAllMoves(game.player,avail);
+	checkAllMoves(player,avail);
 }
 
 void printFrame(){
@@ -225,7 +242,7 @@ void printBoard(){
 			if(sq<=PL2){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_FillCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
-			}else if(sq==game.player+EDIF){
+			}else if(sq==player+EDIF){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_DrawCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
 			}
@@ -234,9 +251,9 @@ void printBoard(){
 	printFrame();
 }
 
-void printInfo(){
-	sprintf(game.)
-}
+//void printInfo(){
+//	sprintf(game.)
+//}
 
 void selectSq(Coord sq){
 	BSP_LCD_SetTextColor(SELECTEDCLR);
@@ -274,21 +291,36 @@ void playAI(Coord move){
 	}
 }
 
+void restartClock(){
+	clockAn = 0;
+
+			analogClock(CLCKBKG,LCLCKCNTRX);
+
+			analogClock(CLCKBKG,RCLCKCNTRX);
+}
+
+void swapPlayer(){
+	player = !player;
+	restartClock();
+
+}
+
 void play(){
 	checkTIM6();
 	checkTIM7();
 	if(checkPB()){
-		return;
+		//return;
 	}
-	board[touch.x][touch.y] = game.player;
+	board[touch.x][touch.y] = player;
 	resetArray(allEnemies,8);
-	exposeAllEnemies(touch,game.player,allEnemies);
+	exposeAllEnemies(touch,player,allEnemies);
 	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-		theConverter(allEnemies[i],touch,game.player,1);
+		theConverter(allEnemies[i],touch,player,1);
 	}
-	game.player = !game.player;
-	clockAn = 0;
-	remain = checkAllMoves(game.player,avail);
+	//player = !player;
+	//clockAn = 0;
+	swapPlayer();
+	remain = checkAllMoves(player,avail);
 	printBoard();
 	if(!remain){
 		resetBoard();
@@ -297,8 +329,8 @@ void play(){
 		printFlag = 1;
 		remain = 0;
 	}
-	if((ai && game.player==ai) || ai2){
-		touch = chooseMove(avail,remain,allEnemies,game.player);
+	if((ai && player==ai) || ai2){
+		touch = chooseMove(avail,remain,allEnemies,player);
 		playAI(touch);
 		play();
 	}
@@ -306,16 +338,16 @@ void play(){
 
 void convertColour(Coord enemy){
 	int sign;
-	if(pieceClr[game.player]==PINK){
+	if(pieceClr[player]==PINK){
 		sign = 1;
 	}
-	if(pieceClr[game.player]==BLUE){
+	if(pieceClr[player]==BLUE){
 		sign = -1;
 	}
 	int inc = sign*(G-R)*CLRSPEED;
-	for(tcolour c=pieceClr[!game.player]; c-inc!=pieceClr[game.player]; c+=inc){
-		if(sign*(signed int)pieceClr[game.player]+inc<(signed int)sign*c){
-			c = pieceClr[game.player];
+	for(tcolour c=pieceClr[!player]; c-inc!=pieceClr[player]; c+=inc){
+		if(sign*(signed int)pieceClr[player]+inc<(signed int)sign*c){
+			c = pieceClr[player];
 		}
 		BSP_LCD_SetTextColor(c);
 		BSP_LCD_FillCircle(toPosX(enemy.x)+SQSIZE/2, toPosY(enemy.y)+SQSIZE/2, CIRRAD);
@@ -426,7 +458,7 @@ void checkMenuTS(){
 				ai2 = 1;
 				BSP_LCD_Clear(BCKGND);
 				resetBoard();
-				touch = chooseMove(avail,remain,allEnemies,game.player);
+				touch = chooseMove(avail,remain,allEnemies,player);
 				playAI(touch);
 				play();
 			}
@@ -439,6 +471,7 @@ void checkGameTS(){
 		tsFlag = 0;
 		touch.x = toIndexX(TS_State.touchX[0]);
 		touch.y = toIndexY(TS_State.touchY[0]);
+		tcolour pixClr = BSP_LCD_ReadPixel(touch.x, touch.y);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
 			if(touch.x!=prev.x || touch.y!=prev.y){
 				printBoard();
@@ -447,12 +480,12 @@ void checkGameTS(){
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
-		}
+		}else if(pixClr==pieceClr[PL1] || pixClr==pieceClr[PL2] || pixClr==DANGERCLR)
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		printBoard();
 		dsFlag = 0;
-		if(board[touch.x][touch.y]==game.player+EDIF){
+		if(board[touch.x][touch.y]==player+EDIF){
 			play();
 		}
 	}
@@ -461,8 +494,8 @@ void checkGameTS(){
 void checkTIM7(){
 	if(timFlag){
 		timFlag = 0;
-		game.totalTime++;
-		if(game.totalTime%2){
+		totalTime++;
+		if(totalTime%2){
 			HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
 			if(status==HAL_OK){
 				convertedValue=HAL_ADC_GetValue(&hadc1);
@@ -478,23 +511,27 @@ void checkTIM7(){
 }
 
 void checkTIM6(){
-	if(clockFlag){
+	if(clockFlag && mode==GAME){
 		clockFlag = 0;
-		if(clockAn==0)
-			analogClock(CLCKBKG,centreX);
-			analogClock(CLCKBKG,centreY);
+		if(clockAn==0){
+			analogClock(CLCKBKG,LCLCKCNTRX);
+			analogClock(CLCKBKG,RCLCKCNTRX);}
 		if(clockAn<15){
-			if(game.player == P1)
-				printCountdown(i,pieceClr[P1],LCLCKCNTR);
-			if(game.player == P2)
-				printCountdown(i,pieceClr[P2],RCLCKCNTR);
-		}else if(clockAn<15){
-			if(game.player == P1)
-				printCountdown(i,DANGERCLR,LCLCKCNTR);
-			if(game.player == P2)
-				printCountdown(i,DANGERCLR,RCLCKCNTR);
-		}else if(clockAn>=20){
-			clockAn = 0;
+			if(player == PL1)
+				printCountdown(clockAn,pieceClr[PL1]-1,LCLCKCNTRX);
+			if(player == PL2)
+				printCountdown(clockAn,pieceClr[PL2]-1,RCLCKCNTRX);
+		}else if(clockAn<20){
+			if(player == PL1){
+				analogClock(DANGERCLR,LCLCKCNTRX);
+				printCountdown(clockAn,DANGERCLR,LCLCKCNTRX);}
+			if(player == PL2){
+				analogClock(DANGERCLR,LCLCKCNTRX);
+				printCountdown(clockAn,DANGERCLR,RCLCKCNTRX);
+			}
+
+		}else{
+			swapPlayer();
 		}
 	}
 }
@@ -502,15 +539,17 @@ void checkTIM6(){
 _Bool checkPB(){
 	if(pbFlag){
 		pbFlag = 0;
-		mode = MENU;
-		printFlag = 1;
-		if(initGame){
-			menuSize = ORIGOPT+1;
-		}
+//		mode = MENU;
+//		printFlag = 1;
+//		if(initGame){
+//			menuSize = ORIGOPT+1;
+//		}
+		swapPlayer();
 		return TRUE;
 	}
 	return FALSE;
 }
+
 
 
 
@@ -556,6 +595,15 @@ void configs(){
 
 int main(void)
 {
+//	Game game;
+//	//game.totalTime = 0;
+//	//playerTime = {0,0};
+//	playerName = {"Pink","Blue"};
+//	game.score = {2,2};
+//	game.nPossMoves = {4,4};
+//	game.nTimeOut = {0,0};
+//	player = PL1;
+
 	if(!configFlag){
 		configs();
 	}
@@ -580,17 +628,16 @@ int main(void)
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printBoard();
-				analogClock(CLCKBKG,LCLCKCNTR);
-				analogClock(CLCKBKG,RCLCKCNTR);
+				restartClock();
 				printFlag = 0;
 			}
 			checkGameTS();
 //			analogClock(CLCKBKG,RCLCKCNTRX);
 //			printClock(LCLCKCNTRX);
-//			game.player = !game.player;
+//			player = !player;
 //			//analogClock(CLCKBKG,RCLCKCNTRX);
 //			printClock(RCLCKCNTRX);
-//			game.player = !game.player;
+//			player = !player;
 		}
 	}
 }
