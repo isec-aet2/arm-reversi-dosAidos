@@ -66,10 +66,12 @@ Coord allEnemies[8];
 int remain = 0;
 _Bool configFlag = 0;
 _Bool initGame = 1;
+_Bool clockFlag = 0;
+double clockAn = 0;
 
 #ifdef _ST_
 
-struct _game gameX;
+struct _game game;
 //game.totalTime = 0;
 //game.playerTime = {0,0};
 game.playerName = {"Pink","Blue"};
@@ -100,7 +102,8 @@ void debug(char * text){
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 	if(htim -> Instance == TIM6){
-
+		clockAn += 0.01;
+		clockFlag = 1;
 	}
 	if(htim -> Instance == TIM7){
 		timCount++;
@@ -272,7 +275,8 @@ void playAI(Coord move){
 }
 
 void play(){
-	checkTIM();
+	checkTIM6();
+	checkTIM7();
 	if(checkPB()){
 		return;
 	}
@@ -283,6 +287,7 @@ void play(){
 		theConverter(allEnemies[i],touch,game.player,1);
 	}
 	game.player = !game.player;
+	clockAn = 0;
 	remain = checkAllMoves(game.player,avail);
 	printBoard();
 	if(!remain){
@@ -453,10 +458,11 @@ void checkGameTS(){
 	}
 }
 
-void checkTIM(){
+void checkTIM7(){
 	if(timFlag){
 		timFlag = 0;
-		if(timCount%2){
+		game.totalTime++;
+		if(game.totalTime%2){
 			HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
 			if(status==HAL_OK){
 				convertedValue=HAL_ADC_GetValue(&hadc1);
@@ -468,7 +474,28 @@ void checkTIM(){
 				BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)temp, RIGHT_MODE);
 			}
 		}
-		totalTime++;
+	}
+}
+
+void checkTIM6(){
+	if(clockFlag){
+		clockFlag = 0;
+		if(clockAn==0)
+			analogClock(CLCKBKG,centreX);
+			analogClock(CLCKBKG,centreY);
+		if(clockAn<15){
+			if(game.player == P1)
+				printCountdown(i,pieceClr[P1],LCLCKCNTR);
+			if(game.player == P2)
+				printCountdown(i,pieceClr[P2],RCLCKCNTR);
+		}else if(clockAn<15){
+			if(game.player == P1)
+				printCountdown(i,DANGERCLR,LCLCKCNTR);
+			if(game.player == P2)
+				printCountdown(i,DANGERCLR,RCLCKCNTR);
+		}else if(clockAn>=20){
+			clockAn = 0;
+		}
 	}
 }
 
@@ -536,7 +563,8 @@ int main(void)
 	while (1)
 	{
 
-		checkTIM();
+		checkTIM6();
+		checkTIM7();
 		switch(mode){
 		case MENU:
 			if(printFlag){
@@ -552,6 +580,8 @@ int main(void)
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printBoard();
+				analogClock(CLCKBKG,LCLCKCNTR);
+				analogClock(CLCKBKG,RCLCKCNTR);
 				printFlag = 0;
 			}
 			checkGameTS();
