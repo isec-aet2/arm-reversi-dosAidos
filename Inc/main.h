@@ -66,10 +66,6 @@ typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 void debug(char * text);
-void analogClock(tcolour colour, int centreX);
-void printCountdown(double sec, tcolour colour, int centreX);
-void printClock(int centreX);
-void resetClock();
 int toPosX(int index);
 int toPosY(int index);
 int toIndexX(int pos);
