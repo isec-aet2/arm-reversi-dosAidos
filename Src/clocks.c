@@ -35,3 +35,9 @@ void printClock(int centreX){
 	}
 	analogClock(CLCKBKG,centreX);
 }
+
+void resetClock(){
+	clockAn = 0;
+	analogClock(CLCKBKG,LCLCKCNTRX);
+	analogClock(CLCKBKG,RCLCKCNTRX);
+}

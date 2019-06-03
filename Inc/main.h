@@ -5,9 +5,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
-#include "configs.h"
-#include "main.h"
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "time.h"
@@ -15,8 +13,15 @@
 #include "stm32f769i_discovery.h"
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
-#include "proj1.h"
+#include "stm32f7xx_hal.h"
 
+#include "main.h"
+#include "configs.h"
+#include "proj1.h"
+#include "interrupts.h"
+#include "clocks.h"
+#include "converters.h"
+#include "display.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -37,13 +42,6 @@ TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 
 SDRAM_HandleTypeDef hsdram1;
-
-
-
-
-
-
-
 
 
 /* USER CODE END ET */
@@ -67,19 +65,11 @@ typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 //void Error_Handler(void);
 void debug(char * text);
 void resetBoard();
-void printFrame();
-void printBoard();
+
 void playAI(Coord move);
 void play();
 void swapPlayer();
-void selectSq(Coord sq);
-void colourButton(int btn, int btnClr, int txtClr);
-void convertColour(Coord enemy);
-void printMenu();
-pPoint createSkirt(pPoint skirt);
-pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
-void printMale(tcolour colour);
-void printFemale(tcolour colour);
+
 
 
 /* USER CODE BEGIN EFP */
