@@ -41,37 +41,20 @@ SDRAM_HandleTypeDef hsdram1;
 
 
 
-#ifndef _ST_
-#define _ST_
-
-
-typedef struct _coord{
-	int x;
-	int y;
-}Coord;
 
 
 
-
-
-
-#endif
-
-typedef uint32_t tcolour;
-typedef enum _state {MENU,GAME,NONE} State;
-typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 
 
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-typedef struct _time{
-	int sec;
-	int min;
-	int hour;
-}Time;
 
+
+typedef uint32_t tcolour;
+typedef enum _state {MENU,GAME,NONE} State;
+typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
 
 /* USER CODE END EC */
 
@@ -83,13 +66,14 @@ typedef struct _time{
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 void debug(char * text);
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim);
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 void analogClock(tcolour colour, int centreX);
 void printCountdown(double sec, tcolour colour, int centreX);
 void printClock(int centreX);
-int toPos(int index);
-int toIndex(int pos);
+void resetClock();
+int toPosX(int index);
+int toPosY(int index);
+int toIndexX(int pos);
+int toIndexY(int pos);
 int toButton(int posY);
 void resetBoard();
 void printFrame();
@@ -105,14 +89,11 @@ pPoint createSkirt(pPoint skirt);
 pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
 void printMale(tcolour colour);
 void printFemale(tcolour colour);
-void checkMenuTS();
-void checkGameTS();
-void checkTIM6();
-void checkTIM7();
-_Bool checkPB();
+
 
 /* USER CODE BEGIN EFP */
-//extern int board[ROWS][COLS];
+
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -131,12 +112,13 @@ _Bool checkPB();
 #define LCDXCNTR				  (BSP_LCD_GetXSize()/2)
 #define LCDYMAX					  BSP_LCD_GetYSize()
 
+#define NCONT					 5
 #define SQSIZE					50
 #define CIRRAD					20
 #define BORDERX   				  (LCDXCNTR-SQSIZE*COLS/2)
 #define BORDERY					  ((LCDYMAX-SQSIZE*ROWS)/2)
 #define STRSIZE				   100
-#define ELIPSEX				   150
+#define ELIPSEX				   100
 #define ELIPSEY				    30
 
 #define TEMPCLR					  LCD_COLOR_GRAY
@@ -211,8 +193,6 @@ _Bool checkPB();
 #define DECAP					10
 
 
-extern Content board[ROWS][COLS];
-
 typedef struct _game{
 	//Time totalTime;
 	//Time playerTime[2];
@@ -224,6 +204,54 @@ typedef struct _game{
 	int nTimeOut[2];
 	Content player;
 }Game;
+
+
+
+#ifndef _ST_
+#define _ST_
+
+typedef struct _coord{
+	int x;
+	int y;
+}Coord;
+
+#endif
+
+
+extern Content board[ROWS][COLS];
+extern State mode;
+extern _Bool ai;
+extern _Bool ai2;
+extern _Bool printFlag;
+extern Content board[ROWS][COLS];
+extern Coord touch;
+extern Coord prev;
+extern int btn;
+extern Coord avail[ROWS*COLS];
+extern Coord allEnemies[8];
+extern int remain;
+extern _Bool configFlag;
+extern _Bool newGame;
+extern _Bool clockFlag;
+extern double clockAn;
+extern _Bool redFlag;
+extern int timCount;
+extern _Bool timFlag;
+extern _Bool pbFlag;
+extern _Bool tsFlag;
+extern _Bool dsFlag;
+extern _Bool btnLeft;
+extern _Bool personFlag;
+extern int menuSize;
+extern TS_StateTypeDef TS_State;
+extern tcolour pieceClr[NCONT];
+extern char menuOpt[ORIGOPT+1][STRSIZE];
+extern uint32_t convertedValue;
+extern long int degrees;
+extern char temp[STRSIZE];
+extern Game game;
+
+
 /* USER CODE END Private defines */
 
 
