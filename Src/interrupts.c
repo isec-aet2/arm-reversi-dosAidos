@@ -27,8 +27,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 }
 
 
-void checkMenuTS(){
-	tcolour touchClr;
+void checkMenuTS(pPoint skirt[]){
 	if(tsFlag){
 		tsFlag = 0;
 		touch.x = TS_State.touchX[0];
@@ -54,19 +53,29 @@ void checkMenuTS(){
 	}else if(dsFlag){
 		dsFlag = 0;
 		if(personFlag){
-			if(touchClr==BLUECLR){
-				if(touch.x<LCDXCNTR){
-					printFemale(PINKCLR);
-				}else{
-					printMale(PINKCLR);
-				}
-			}else if(touchClr==PINKCLR){
-				if(touch.x<LCDXCNTR){
-					printFemale(BLUECLR);
-				}else{
-					printMale(BLUECLR);
-				}
+			tside side;
+			if(touch.x<LCDXCNTR){
+				side = LEFT;
 			}
+			if(touch.x>LCDXCNTR){
+				side = RIGHT;
+			}
+			printBody(BCKGND, side, bodyDisp[side], skirt[side]);
+			printBody(!touchClr, side, !bodyDisp[side], skirt[side]);
+
+//			if(touchClr==BLUECLR){
+//				if(touch.x<LCDXCNTR){
+//					printFemale(PINKCLR);
+//				}else{
+//					printMale(PINKCLR);
+//				}
+//			}else if(touchClr==PINKCLR){
+//				if(touch.x<LCDXCNTR){
+//					printFemale(BLUECLR);
+//				}else{
+//					printMale(BLUECLR);
+//				}
+//			}
 		}else{
 			//colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 			mode = GAME;
@@ -99,7 +108,7 @@ void checkGameTS(){
 		tsFlag = 0;
 		touch.x = toIndexX(TS_State.touchX[0]);
 		touch.y = toIndexY(TS_State.touchY[0]);
-		tcolour pixClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
+		touchClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
 			if(touch.x!=prev.x || touch.y!=prev.y){
 				printBoard();
@@ -108,14 +117,14 @@ void checkGameTS(){
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
-		}else if(pixClr==pieceClr[PINK] || pixClr==pieceClr[BLUE] || pixClr==DANGERCLR || pixClr==CLCKBKG || pixClr==CLCKFRAME){
-			resetClock();
+		}else if(touchClr==pieceClr[PINK] || touchClr==pieceClr[BLUE] || touchClr==DANGERCLR || touchClr==CLCKBKG || touchClr==CLCKFRAME){
+			resetClocks();
 		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		printBoard();
 		dsFlag = 0;
-		if(board[touch.x][touch.y]==game.player+EDIF){
+		if(board[touch.x][touch.y]==game.player+AVAILDIF){
 			play();
 		}
 	}
@@ -146,30 +155,18 @@ void checkTIM6(){
 		clockAn += 0.01;
 		clockFlag = 0;
 		if(clockAn==0){
-			analogClock(CLCKBKG,LCLCKCNTRX);
-			analogClock(CLCKBKG,RCLCKCNTRX);}
+			analogClock(CLCKBKG,LEFT);
+			analogClock(CLCKBKG,RIGHT);
+		}
 		if(clockAn<15){
-			if(game.player == PINK)
-				printCountdown(clockAn,pieceClr[PINK],LCLCKCNTRX);
-			if(game.player == BLUE)
-				printCountdown(clockAn,pieceClr[BLUE],RCLCKCNTRX);
+			printCountdown(clockAn,pieceClr[game.player],(tside)game.player);
 			redFlag = 1;
 		}else if(clockAn<20){
-			if(game.player == PINK){
-				if(redFlag){
-					redFlag = 0;
-					analogClock(DANGERCLR,LCLCKCNTRX);
-				}
-
-				printCountdown(clockAn,DANGERCLR,LCLCKCNTRX);}
-			if(game.player == BLUE){
-				if(redFlag){
-					redFlag = 0;
-					analogClock(DANGERCLR,RCLCKCNTRX);
-				}
-				printCountdown(clockAn,DANGERCLR,RCLCKCNTRX);
+			if(redFlag){
+				redFlag = 0;
+				analogClock(DANGERCLR,(tside)game.player);
 			}
-
+			printCountdown(clockAn,DANGERCLR,(tside)game.player);
 		}else{
 			swapPlayer();
 		}

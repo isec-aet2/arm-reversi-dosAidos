@@ -23,8 +23,8 @@
 #define _ST_
 
 //typedef int tcolour;
-//typedef enum _state {MENU,GAME} State;
-//typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
+//typedef enum _tmode {MENU,GAME} tmode;
+//typedef enum _tcontent {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
 
 typedef struct _coord{
 	int x;
@@ -61,8 +61,6 @@ typedef struct _coord{
 //	int game.player;
 //}Game;
 
-tcolour pieceClr[] = {PINKCLR,BLUECLR,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
-
 int timCount = 0;
 _Bool timFlag = 0;
 _Bool pbFlag = 0;
@@ -72,12 +70,11 @@ _Bool btnLeft = 0;
 _Bool personFlag = 0;
 int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
-
-State mode = MENU;
+tmode mode = MENU;
 _Bool ai;
 _Bool ai2;
 _Bool printFlag = 1;
-Content board[ROWS][COLS];
+tcontent board[ROWS][COLS];
 Coord touch;
 Coord prev;
 int btn;
@@ -89,6 +86,8 @@ _Bool newGame = 1;
 _Bool clockFlag = 0;
 double clockAn = 0;
 _Bool redFlag = 0;
+tcolour touchClr;
+tbody bodyDisp[] = {FEMALE,MALE};
 
 Game game;
 //game.totalTime = 0;
@@ -114,14 +113,30 @@ Game game;
 
 #endif
 
-
+tcolour pieceClr[] = {PINKCLR,BLUECLR,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
 char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
 
 uint32_t convertedValue;
 long int degrees;
 char temp[STRSIZE];
 
+int clckcntrX[] = {LCLCKCNTRX,RCLCKCNTRX};
+int headX[] = {LHEADX,RHEADX};
+int bodyX[] = {LBODYX,RBODYX};
+int infotX[] = {LINFOT,RINFOT};
+int infoX[] = {LINFO,RINFO};
 
+char templ1[NINFO1][STRSIZE];
+char templ2[NINFO2][STRSIZE];
+char info1[NINFO1][STRSIZE];
+char info2[NINFO2][2][STRSIZE];
+
+Point ltrip1;
+Point ltrip2;
+Point ltrip3;
+Point rtrip1;
+Point rtrip2;
+Point rtrip3;
 
 
 
@@ -131,17 +146,6 @@ void debug(char * text){
 	BSP_LCD_SetFont(&Font24);
 	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t *)text, RIGHT_MODE);
 }
-
-
-
-//Time toTime(int total){
-//	Time time;
-//	time.hour = (total%60)%60;
-//	total /= 60;
-//	time.min = total%60;
-//	time.sec = total/60;
-//	return time;
-//}
 
 
 
@@ -171,7 +175,7 @@ void configs(){
 
 	BSP_PB_Init(0,1);
 
-	BSP_TS_Init(800,480);
+	BSP_TS_Init(LCDXCNTR*2,LCDYMAX);
 	BSP_TS_ITConfig();
 
 	HAL_TIM_Base_Start_IT(&htim6);
@@ -184,26 +188,22 @@ void configs(){
 	configFlag = 1;
 }
 
-void initGame(){
-	game.totalTime = 0;
-	game.playerTime[PINK] = game.playerTime[BLUE] = 0;
-	strcpy(game.playerName[PINK], "Pink");
-	strcpy(game.playerName[BLUE], "Blue");
-	game.score[PINK] = game.score[BLUE] = 2;
-	game.nPossMoves[PINK] = game.nPossMoves[BLUE] = 4;
-	game.nTimeOut[PINK] = game.nTimeOut[BLUE] = 0;
-	game.player = PINK;
-}
 
-
-int main(void)
-{
+int main(){
+	ltrip1.X = LTRIP1X;
+	ltrip2.X = LTRIP2X;
+	ltrip3.X = LTRIP3X;
+	rtrip1.X = RTRIP1X;
+	rtrip2.X = RTRIP2X;
+	rtrip3.X = RTRIP3X;
+	ltrip1.Y = rtrip1.Y = TRIP1Y;
+	ltrip2.Y = rtrip2.Y = TRIP2Y;
+	ltrip3.Y = rtrip3.Y = TRIP3Y;
+	Point skirt[2][3] = {{ltrip1,ltrip2,ltrip3},{rtrip1,rtrip2,rtrip3}};
 
 	if(!configFlag){
 		configs();
 	}
-
-	game.player = PINK;
 
 	while (1)
 	{
@@ -215,26 +215,23 @@ int main(void)
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printMenu();
-				printMale(BLUECLR);
-				printFemale(PINKCLR);
+				printBody(PINKCLR, LEFT, FEMALE, skirt[LEFT]);
+				printBody(BLUECLR, RIGHT, MALE, skirt[RIGHT]);
 				printFlag = 0;
 			}
-			checkMenuTS();
+			checkMenuTS(skirt);
 			break;
 		case GAME:
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printBoard();
-				resetClock();
+				resetClocks();
 				printFlag = 0;
 			}
 			checkGameTS();
-//			analogClock(CLCKBKG,RCLCKCNTRX);
-//			printClock(LCLCKCNTRX);
-//			game.player = !game.player;
-//			//analogClock(CLCKBKG,RCLCKCNTRX);
-//			printClock(RCLCKCNTRX);
-//			game.player = !game.player;
+		case NONE:
+			continue;
+			//included to avoid warnings
 		}
 	}
 }

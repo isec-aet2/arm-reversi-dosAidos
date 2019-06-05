@@ -8,5 +8,6 @@ void resetBoard();
 void playAI(Coord move);
 void play();
 void swapPlayer();
+void initGame();
 
 #endif

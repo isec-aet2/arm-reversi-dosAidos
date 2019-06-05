@@ -1,6 +1,15 @@
 
 #include "display.h"
 
+#ifndef _TIME_
+#define _TIME_
+typedef struct _time{
+	int sec;
+	int min;
+	int hour;
+}Time;
+#endif
+
 void resetBoard(){
 	for(int i=0; i<ROWS; i++){
 		for(int j=0; j<COLS; j++){
@@ -25,7 +34,7 @@ void printFrame(){
 }
 
 void printBoard(){
-	Content sq;
+	tcontent sq;
 	BSP_LCD_SetTextColor(BOARDCLR);
 	BSP_LCD_FillRect(BORDERX, BORDERY, SQSIZE*ROWS, SQSIZE*COLS);
 	for(int i=0; i<ROWS; i++){
@@ -36,7 +45,7 @@ void printBoard(){
 			if(sq<=BLUE){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_FillCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
-			}else if(sq==game.player+EDIF){
+			}else if(sq==game.player+AVAILDIF){
 				BSP_LCD_SetTextColor(pieceClr[sq]);
 				BSP_LCD_DrawCircle(toPosX(i)+SQSIZE/2.0, toPosY(j)+SQSIZE/2.0, CIRRAD);
 			}
@@ -45,9 +54,38 @@ void printBoard(){
 	printFrame();
 }
 
-//void printInfo(){
-//	sprintf(game.)
-//}
+void printInfo(){
+	BSP_LCD_SetFont(&INFOFONT);
+	BSP_LCD_SetTextColor(INFOCLR);
+//	char totalTimeStr[STRSIZE];
+//	char playerTimeStr[2][STRSIZE];
+//	char scoreStr[2][STRSIZE];
+//	char nPossMovesStr[2][STRSIZE];
+//	char nTimeOutStr[2][STRSIZE];
+	Time tTime = toTime(game.totalTime);
+	Time pTime[] = {toTime(game.playerTime[PINK]),toTime(game.playerTime[BLUE])};
+//	sprintf(totalTimeStr, "Game's total time:\t%.2d : %.2d : %.2d\n", tTime.hour, tTime.min, tTime.sec);
+//	for(int i=PINK,j=LEFT_MODE; i<=BLUE; i++,j--){
+//		sprintf(playerTimeStr[i], "Total time:\t%.2d : %.2d : %.2d\n", pTime[i].hour, pTime[i].min, pTime[i].sec);
+//		sprintf(scoreStr[i], "Score:\t%d\n", game.score[i]);
+//		sprintf(nPossMovesStr[i], "Possible moves:\t%d\n", game.nPossMoves[i]);
+//		sprintf(nTimeOutStr[i], "Timeouts left:\t%d", TIMEOUTMAX-game.nTimeOut[i]);
+//		BSP_LCD_DisplayStringAt(Xpos, Ypos, scoreStr, Mode);
+//		BSP_LCD_DisplayStringAt(Xpos, Ypos, Text, Mode);
+//		BSP_LCD_DisplayStringAt(Xpos, Ypos, Text, Mode);
+//		BSP_LCD_DisplayStringAt(Xpos, Ypos, Text, Mode);
+//	}
+	for(int i=NINFO1; i>0; i--){
+		//BSP_LCD_DisplayStringAt(0, Ypos, templ1[i], CENTER_MODE);
+		BSP_LCD_DisplayStringAt(0, LCDYMAX-INFOYBORDER*i, info1[i-1], CENTER_MODE);
+	}
+	for(int i=0; i<NINFO2; i++){
+		for(int j=LEFT; j<=RIGHT; j++){
+			BSP_LCD_DisplayStringAt(infotX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, templ2[i], LEFT_MODE);
+			BSP_LCD_DisplayStringAt(infoX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, info2[i], RIGHT_MODE);
+		}
+	}
+}
 
 void selectSq(Coord sq){
 	BSP_LCD_SetTextColor(SELECTEDCLR);
@@ -69,7 +107,7 @@ void convertColour(Coord enemy){
 	if(pieceClr[game.player]==BLUECLR){
 		sign = -1;
 	}
-	int inc = sign*(G-R)*CLRSPEED;
+	int inc = sign*CLRSPEED*(G-R);
 	for(tcolour c=pieceClr[!game.player]; c-inc!=pieceClr[game.player]; c+=inc){
 		if(sign*(signed int)pieceClr[game.player]+inc<(signed int)sign*c){
 			c = pieceClr[game.player];
@@ -94,33 +132,31 @@ void printMenu(){
 		colourButton(i, BUTTONCLR, BUTTONTXTCLR);
 	}
 }
+//
+//pPoint createSkirt(pPoint skirt){
+//	Point trip1;
+//	Point trip2;
+//	Point trip3;
+////	trip1.X = TRIP1X;
+////	trip2.X = TRIP2X;
+////	trip3.X = TRIP3X;
+////	trip1.Y = TRIP1Y;
+////	trip2.Y = TRIP2Y;
+////	trip3.Y = TRIP3Y;
+////	skirt[0] = trip1;
+////	skirt[1] = trip2;
+////	skirt[2] = trip3;
+//	return skirt;
+//}
 
-pPoint createSkirt(pPoint skirt){
-	Point trip1;
-	Point trip2;
-	Point trip3;
-	trip1.X = TRIP1X;
-	trip1.Y = TRIP1Y;
-	trip2.X = TRIP2X;
-	trip2.Y = TRIP2Y;
-	trip3.X = TRIP3X;
-	trip3.Y = TRIP3Y;
-	skirt[0] = trip1;
-	skirt[1] = trip2;
-	skirt[2] = trip3;
-	return skirt;
-}
 
-void printMale(tcolour colour){
+void printBody(tcolour colour, tside side, tbody body, pPoint skirt[]){
 	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_FillCircle(RHEADX, HEADY, HEADRAD);
-	BSP_LCD_FillRect(RBODYX, BODYY, BODYWIDTH, BODYHEIGHT);
-}
-
-void printFemale(tcolour colour){
-	BSP_LCD_SetTextColor(colour);
-	BSP_LCD_FillCircle(LHEADX, HEADY, HEADRAD);
-	Point skirt[3];
-	BSP_LCD_FillPolygon(createSkirt(skirt), 3);
+	BSP_LCD_FillCircle(headX[side], HEADY, HEADRAD);
+	if(body==FEMALE){
+		//s
+	}else{
+		BSP_LCD_FillRect(bodyX[side], BODYY, BODYWIDTH, BODYHEIGHT);
+	}
 }
 

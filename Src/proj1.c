@@ -51,7 +51,7 @@ int checkAllMoves(_Bool player, Coord avail[]){ //checks all possible moves
             	empty.x = i;
             	empty.y = j;
                 if(checkEnemies(player,empty)){
-                    board[empty.x][empty.y] = player+EDIF;
+                    board[empty.x][empty.y] = player+AVAILDIF;
                     avail[n] = empty;
                     n++;
                 }else{

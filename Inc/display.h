@@ -1,6 +1,12 @@
 
 #include "main.h"
 
+#ifndef _TYPES_
+#define _TYPES_
+typedef enum _side {LEFT, RIGHT} tside;
+typedef enum _body {FEMALE,MALE} tbody;
+#endif
+
 #ifndef _DISP_
 #define _DISP_
 
@@ -10,9 +16,9 @@ void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
 void convertColour(Coord enemy);
 void printMenu();
-pPoint createSkirt(pPoint skirt);
+void printInfo();
+//pPoint createSkirt(pPoint skirt);
 pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
-void printMale(tcolour colour);
-void printFemale(tcolour colour);
+void printBody(tcolour colour, tside side, tbody body, pPoint * skirt);
 
 #endif

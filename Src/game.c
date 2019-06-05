@@ -5,8 +5,7 @@
 
 void swapPlayer(){
 	game.player = !game.player;
-	resetClock();
-
+	resetClocks();
 }
 
 void playAI(Coord move){
@@ -46,8 +45,6 @@ void play(){
 	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
 		theConverter(allEnemies[i],touch,game.player,1);
 	}
-	//game.player = !game.player;
-	//clockAn = 0;
 	swapPlayer();
 	remain = checkAllMoves(game.player,avail);
 	printBoard();
@@ -63,4 +60,15 @@ void play(){
 		playAI(touch);
 		play();
 	}
+}
+
+void initGame(){
+	game.totalTime = 0;
+	game.playerTime[PINK] = game.playerTime[BLUE] = 0;
+	strcpy(game.playerName[PINK], "Pink");
+	strcpy(game.playerName[BLUE], "Blue");
+	game.score[PINK] = game.score[BLUE] = 2;
+	game.nPossMoves[PINK] = game.nPossMoves[BLUE] = 4;
+	game.nTimeOut[PINK] = game.nTimeOut[BLUE] = 0;
+	game.player = PINK;
 }

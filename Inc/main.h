@@ -53,8 +53,13 @@ SDRAM_HandleTypeDef hsdram1;
 
 
 typedef uint32_t tcolour;
-typedef enum _state {MENU,GAME,NONE} State;
-typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} Content;
+typedef enum _mode {MENU,GAME,NONE} tmode;
+typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
+#ifndef _TYPES_
+#define _TYPES_
+typedef enum _side {LEFT, RIGHT} tside;
+typedef enum _body {FEMALE,MALE} tbody;
+#endif
 
 /* USER CODE END EC */
 
@@ -87,8 +92,8 @@ void configs();
 #define PINKCLR					  LCD_COLOR_MAGENTA
 #define BLUECLR					  LCD_COLOR_CYAN
 
-#define LCDXCNTR				  (BSP_LCD_GetXSize()/2)
-#define LCDYMAX					  BSP_LCD_GetYSize()
+#define LCDXCNTR				  (800/2)
+#define LCDYMAX					  480
 
 #define NCONT					 5
 #define SQSIZE					50
@@ -104,6 +109,17 @@ void configs();
 
 #define MFONT					  Font24
 #define MFONTSIZE				24
+#define INFOFONT				  Font20
+#define INFOCLR					  LCD_COLOR_BLACK
+#define INFOXBORDER				99
+#define INFOYBORDER				 5
+#define NINFO1					 1
+#define NINFO2					 4
+#define YINFO					  (CLCKCNTRY+CLCKRAD+INFOXBORDER)
+#define LINFO					50
+#define RINFO					  (LCDXCNTR+SQSIZE*COLS/2+LINFO)
+#define LINFOT					  LINFO
+#define RINFOT					  RINFO
 
 #define TOUCHDELAY				12
 #define AIDELAY				   100
@@ -111,7 +127,7 @@ void configs();
 #define CLRSPEED			     1
 
 #define BCKGND					  LCD_COLOR_WHITE
-#define FRAMECLR				  LCD_COLOR_GRAY
+#define FRAMECLR				  LCD_COLOR_LIGHTGRAY
 #define BUTTONCLR				  LCD_COLOR_LIGHTGRAY
 #define BUTTONTXTCLR			  LCD_COLOR_BLACK
 #define PRESSEDBUTTONCLR		  LCD_COLOR_DARKGRAY
@@ -125,7 +141,7 @@ void configs();
 #define LCLCKCNTRX			   100
 #define RCLCKCNTRX				  (LCDXCNTR*2-LCLCKCNTRX)
 #define CLCKCNTRY			   100
-#define CLCKRAD					50
+#define CLCKRAD					55
 #define CLCKSPEED			0.0001
 #define DANGERFR			  0.75
 #define CLCKBKG					  (LCD_COLOR_WHITE-1)
@@ -135,25 +151,18 @@ void configs();
 #define ROWS 					 8
 #define COLS 					 8
 #define NOCOORD 				-2
-//#define EMPTY					-1
-//#define PINK					 0
-//#define BLUE					 1
-//#define PINKAVAIL					 2
-//#define BLUEAVAIL					 3
-#define EDIF					  PINKAVAIL-PINK
+#define AVAILDIF		    	  (PINKAVAIL-PINK)
 #define TRUE 					 1
 #define FALSE 					 0
-//#define PINKCLR					  PINKCLR
-//#define BLUECLR					  BLUECLR
-#define PINKAVAILCLR					  LCD_COLOR_DARKMAGENTA
-#define BLUEAVAILCLR					  LCD_COLOR_DARKCYAN
+#define PINKAVAILCLR			  LCD_COLOR_DARKMAGENTA
+#define BLUEAVAILCLR			  LCD_COLOR_DARKCYAN
 #define BOARDCLR				  LCD_COLOR_BLACK
 #define GRIDCLR					  LCD_COLOR_WHITE
 
 #define R	 			0x00000100
 #define G	 			0x00010000
 
-#define BODYDIST			   285
+#define BODYDIST			   250
 #define HEADRAD				    30
 #define HEADY				   175
 #define LHEADX				      (LCDXCNTR-BODYDIST)
@@ -161,12 +170,16 @@ void configs();
 #define BODYHEIGHT			   150
 #define BODYWIDTH			    75
 #define BODYY					  (HEADY+HEADRAD+DECAP)
+#define LBODYX					  (LHEADX-BODYWIDTH/2)
 #define RBODYX					  (RHEADX-BODYWIDTH/2)
-#define TRIP1X					  LHEADX
+#define LTRIP1X					  LHEADX
+#define LTRIP2X					  (LHEADX-BODYWIDTH)
+#define LTRIP3X					  (LHEADX+BODYWIDTH)
+#define RTRIP1X					  RHEADX
+#define RTRIP2X					  (RHEADX-BODYWIDTH)
+#define RTRIP3X					  (RHEADX+BODYWIDTH)
 #define TRIP1Y					  BODYY
-#define TRIP2X					  (LHEADX-BODYWIDTH)
 #define TRIP2Y					  (BODYY+BODYHEIGHT)
-#define TRIP3X					  (LHEADX+BODYWIDTH)
 #define TRIP3Y					  (BODYY+BODYHEIGHT)
 #define DECAP					10
 
@@ -180,10 +193,17 @@ typedef struct _game{
 	int score[2];
 	int nPossMoves[2];
 	int nTimeOut[2];
-	Content player;
+	tcontent player;
 }Game;
 
-
+#ifndef _TIME_
+#define _TIME_
+typedef struct _time{
+	int sec;
+	int min;
+	int hour;
+}Time;
+#endif
 
 #ifndef _ST_
 #define _ST_
@@ -195,18 +215,16 @@ typedef struct _coord{
 
 #endif
 
-
-extern Content board[ROWS][COLS];
-extern State mode;
+extern uint32_t convertedValue;
+extern long int degrees;
+extern char temp[STRSIZE];
+extern tmode mode;
 extern _Bool ai;
 extern _Bool ai2;
 extern _Bool printFlag;
-extern Content board[ROWS][COLS];
 extern Coord touch;
 extern Coord prev;
 extern int btn;
-extern Coord avail[ROWS*COLS];
-extern Coord allEnemies[8];
 extern int remain;
 extern _Bool configFlag;
 extern _Bool newGame;
@@ -220,15 +238,32 @@ extern _Bool tsFlag;
 extern _Bool dsFlag;
 extern _Bool btnLeft;
 extern _Bool personFlag;
+extern tcolour touchClr;
 extern int menuSize;
 extern TS_StateTypeDef TS_State;
 extern tcolour pieceClr[NCONT];
 extern char menuOpt[ORIGOPT+1][STRSIZE];
-extern uint32_t convertedValue;
-extern long int degrees;
-extern char temp[STRSIZE];
+extern tcontent board[ROWS][COLS];
+extern Coord avail[ROWS*COLS];
+extern Coord allEnemies[8];
+extern int clckcntrX[2];
+extern int headX[2];
+extern int bodyX[2];
+extern int infotX[2];;
+extern int infoX[2];
+extern Point ltrip1;
+extern Point ltrip2;
+extern Point ltrip3;
+extern Point rtrip1;
+extern Point rtrip2;
+extern Point rtrip3;
+extern Point skirt[2][3];
+extern tbody bodyDisp[2];
 extern Game game;
-
+extern char templ1[NINFO1][STRSIZE];
+extern char templ2[NINFO2][STRSIZE];
+extern char info1[NINFO1][STRSIZE];
+extern char info2[NINFO2][2][STRSIZE];
 
 /* USER CODE END Private defines */
 
