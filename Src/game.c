@@ -72,3 +72,21 @@ void initGame(){
 	game.nTimeOut[PINK] = game.nTimeOut[BLUE] = 0;
 	game.player = PINK;
 }
+
+void initSkirt(){
+	ltrip1.X = LTRIP1X;
+	ltrip2.X = LTRIP2X;
+	ltrip3.X = LTRIP3X;
+	rtrip1.X = RTRIP1X;
+	rtrip2.X = RTRIP2X;
+	rtrip3.X = RTRIP3X;
+	ltrip1.Y = rtrip1.Y = TRIP1Y;
+	ltrip2.Y = rtrip2.Y = TRIP2Y;
+	ltrip3.Y = rtrip3.Y = TRIP3Y;
+	skirt[0][0] = ltrip1;
+	skirt[0][1] = ltrip2;
+	skirt[0][2] = ltrip3;
+	skirt[1][0] = rtrip1;
+	skirt[1][1] = rtrip2;
+	skirt[1][2] = rtrip3;
+}

@@ -67,7 +67,7 @@ _Bool pbFlag = 0;
 _Bool tsFlag = 0;
 _Bool dsFlag = 0;
 _Bool btnLeft = 0;
-_Bool personFlag = 0;
+int personFlag = 0;
 int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
 tmode mode = MENU;
@@ -126,10 +126,10 @@ int bodyX[] = {LBODYX,RBODYX};
 int infotX[] = {LINFOT,RINFOT};
 int infoX[] = {LINFO,RINFO};
 
-char templ1[NINFO1][STRSIZE];
-char templ2[NINFO2][STRSIZE];
 char info1[NINFO1][STRSIZE];
 char info2[NINFO2][2][STRSIZE];
+char templ1[NINFO1][STRSIZE] = {"Game's total time:"};
+char templ2[NINFO2][STRSIZE] = {"Total time:","Score:","Possible moves:","Timeouts left:"};
 
 Point ltrip1;
 Point ltrip2;
@@ -137,6 +137,7 @@ Point ltrip3;
 Point rtrip1;
 Point rtrip2;
 Point rtrip3;
+Point skirt[2][3];
 
 
 
@@ -190,16 +191,8 @@ void configs(){
 
 
 int main(){
-	ltrip1.X = LTRIP1X;
-	ltrip2.X = LTRIP2X;
-	ltrip3.X = LTRIP3X;
-	rtrip1.X = RTRIP1X;
-	rtrip2.X = RTRIP2X;
-	rtrip3.X = RTRIP3X;
-	ltrip1.Y = rtrip1.Y = TRIP1Y;
-	ltrip2.Y = rtrip2.Y = TRIP2Y;
-	ltrip3.Y = rtrip3.Y = TRIP3Y;
-	Point skirt[2][3] = {{ltrip1,ltrip2,ltrip3},{rtrip1,rtrip2,rtrip3}};
+
+	initSkirt();
 
 	if(!configFlag){
 		configs();
@@ -215,11 +208,11 @@ int main(){
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
 				printMenu();
-				printBody(PINKCLR, LEFT, FEMALE, skirt[LEFT]);
-				printBody(BLUECLR, RIGHT, MALE, skirt[RIGHT]);
+				printBody(PINKCLR, LEFT, FEMALE);
+				printBody(BLUECLR, RIGHT, MALE);
 				printFlag = 0;
 			}
-			checkMenuTS(skirt);
+			checkMenuTS();
 			break;
 		case GAME:
 			if(printFlag){

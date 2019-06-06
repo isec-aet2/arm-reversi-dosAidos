@@ -237,7 +237,7 @@ extern _Bool pbFlag;
 extern _Bool tsFlag;
 extern _Bool dsFlag;
 extern _Bool btnLeft;
-extern _Bool personFlag;
+extern int personFlag;
 extern tcolour touchClr;
 extern int menuSize;
 extern TS_StateTypeDef TS_State;

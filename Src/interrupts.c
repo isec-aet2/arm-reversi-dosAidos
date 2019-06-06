@@ -27,11 +27,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 }
 
 
-void checkMenuTS(pPoint skirt[]){
+void checkMenuTS(){
 	if(tsFlag){
 		tsFlag = 0;
 		touch.x = TS_State.touchX[0];
 		touch.y = TS_State.touchY[0];
+		int thisSide = touch.x<LCDXCNTR ? LEFT : RIGHT;
 		touchClr = BSP_LCD_ReadPixel(touch.x, touch.y);
 		if(touchClr==BUTTONCLR || touchClr==BUTTONTXTCLR){
 			btn = toButton(touch.y);
@@ -39,10 +40,16 @@ void checkMenuTS(pPoint skirt[]){
 			personFlag = 0;
 			btnLeft = 1;
 			dsFlag = 1;
-		}else if(touchClr==BLUECLR || touchClr==PINKCLR){
-			personFlag = 1;
+		}else if(touchClr==PINKCLR){
+			personFlag++;
 			btnLeft = 1;
 			dsFlag = 1;
+			printBody(PINKAVAILCLR, thisSide, bodyDisp[thisSide]);
+		}else if(touchClr==BLUECLR){
+			personFlag++;
+			btnLeft = 1;
+			dsFlag = 1;
+			printBody(BLUEAVAILCLR, thisSide, bodyDisp[thisSide]);
 		}else if(btnLeft && touchClr==BCKGND){
 			personFlag = 0;
 			btnLeft = 0;
@@ -60,8 +67,8 @@ void checkMenuTS(pPoint skirt[]){
 			if(touch.x>LCDXCNTR){
 				side = RIGHT;
 			}
-			printBody(BCKGND, side, bodyDisp[side], skirt[side]);
-			printBody(!touchClr, side, !bodyDisp[side], skirt[side]);
+			printBody(BCKGND, side, bodyDisp[side]);
+			printBody(!touchClr, side, !bodyDisp[side]);
 
 //			if(touchClr==BLUECLR){
 //				if(touch.x<LCDXCNTR){

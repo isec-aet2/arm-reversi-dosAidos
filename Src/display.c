@@ -54,7 +54,19 @@ void printBoard(){
 	printFrame();
 }
 
-void printInfo(){
+void fillInfo(){
+	Time tTime = toTime(game.totalTime);
+	Time pTime[] = {toTime(game.playerTime[PINK]),toTime(game.playerTime[BLUE])};
+	sprintf(info1[0], "%.2d : %.2d : %.2d", tTime.hour, tTime.min, tTime.sec);
+	for(int i=PINK; i<=BLUE; i++){
+		sprintf(info2[0][i], "%.2d : %.2d : %.2d", pTime[i].hour, pTime[i].min, pTime[i].sec);
+		sprintf(info2[1][i], "%d", game.score[i]);
+		sprintf(info2[2][i], "%d", game.nPossMoves[i]);
+		sprintf(info2[3][i], "%d", TIMEOUTMAX-game.nTimeOut[i]);
+	}
+}
+
+void printInfo(_Bool templf){
 	BSP_LCD_SetFont(&INFOFONT);
 	BSP_LCD_SetTextColor(INFOCLR);
 //	char totalTimeStr[STRSIZE];
@@ -62,8 +74,7 @@ void printInfo(){
 //	char scoreStr[2][STRSIZE];
 //	char nPossMovesStr[2][STRSIZE];
 //	char nTimeOutStr[2][STRSIZE];
-	Time tTime = toTime(game.totalTime);
-	Time pTime[] = {toTime(game.playerTime[PINK]),toTime(game.playerTime[BLUE])};
+
 //	sprintf(totalTimeStr, "Game's total time:\t%.2d : %.2d : %.2d\n", tTime.hour, tTime.min, tTime.sec);
 //	for(int i=PINK,j=LEFT_MODE; i<=BLUE; i++,j--){
 //		sprintf(playerTimeStr[i], "Total time:\t%.2d : %.2d : %.2d\n", pTime[i].hour, pTime[i].min, pTime[i].sec);
@@ -77,12 +88,14 @@ void printInfo(){
 //	}
 	for(int i=NINFO1; i>0; i--){
 		//BSP_LCD_DisplayStringAt(0, Ypos, templ1[i], CENTER_MODE);
-		BSP_LCD_DisplayStringAt(0, LCDYMAX-INFOYBORDER*i, info1[i-1], CENTER_MODE);
+		BSP_LCD_DisplayStringAt(0, LCDYMAX-INFOYBORDER*i, (uint8_t *)info1[i-1], CENTER_MODE);
 	}
 	for(int i=0; i<NINFO2; i++){
 		for(int j=LEFT; j<=RIGHT; j++){
-			BSP_LCD_DisplayStringAt(infotX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, templ2[i], LEFT_MODE);
-			BSP_LCD_DisplayStringAt(infoX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, info2[i], RIGHT_MODE);
+			if(templf){
+				BSP_LCD_DisplayStringAt(infotX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, (uint8_t *)templ2[i], LEFT_MODE);
+			}
+			BSP_LCD_DisplayStringAt(infoX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, (uint8_t *)info2[j][i], RIGHT_MODE);
 		}
 	}
 }
@@ -150,11 +163,11 @@ void printMenu(){
 //}
 
 
-void printBody(tcolour colour, tside side, tbody body, pPoint skirt[]){
+void printBody(tcolour colour, tside side, tbody body){
 	BSP_LCD_SetTextColor(colour);
 	BSP_LCD_FillCircle(headX[side], HEADY, HEADRAD);
 	if(body==FEMALE){
-		//s
+		BSP_LCD_FillPolygon(skirt[side], 3);
 	}else{
 		BSP_LCD_FillRect(bodyX[side], BODYY, BODYWIDTH, BODYHEIGHT);
 	}

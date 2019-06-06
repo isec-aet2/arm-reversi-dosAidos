@@ -9,5 +9,6 @@ void playAI(Coord move);
 void play();
 void swapPlayer();
 void initGame();
+void initSkirt();
 
 #endif

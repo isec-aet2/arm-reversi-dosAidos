@@ -16,9 +16,9 @@ void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
 void convertColour(Coord enemy);
 void printMenu();
-void printInfo();
+void printInfo(_Bool templf);
 //pPoint createSkirt(pPoint skirt);
 pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
-void printBody(tcolour colour, tside side, tbody body, pPoint * skirt);
+void printBody(tcolour colour, tside side, tbody body);
 
 #endif
