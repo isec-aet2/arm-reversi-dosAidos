@@ -173,3 +173,6 @@ void printBody(tcolour colour, tside side, tbody body){
 	}
 }
 
+void resetBodies(){
+
+}

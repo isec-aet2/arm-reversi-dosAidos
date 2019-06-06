@@ -135,6 +135,7 @@ void configs();
 #define SELECTEDCLR				  LCD_COLOR_DARKGRAY
 #define SELECTEDDIF			 	  (SQSIZE/5)
 #define ORIGOPT					 3
+#define TRANSSEC				 2
 
 #define TIMEOUTSEC				20
 #define TIMEOUTMAX				 3
@@ -224,6 +225,9 @@ extern _Bool ai2;
 extern _Bool printFlag;
 extern Coord touch;
 extern Coord prev;
+tside thisSide;
+tbody thisBody;
+int iClr;
 extern int btn;
 extern int remain;
 extern _Bool configFlag;

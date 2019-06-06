@@ -87,7 +87,9 @@ _Bool clockFlag = 0;
 double clockAn = 0;
 _Bool redFlag = 0;
 tcolour touchClr;
+int iClr = 0;
 tbody bodyDisp[] = {FEMALE,MALE};
+tside thisSide = 0;
 
 Game game;
 //game.totalTime = 0;
@@ -113,7 +115,7 @@ Game game;
 
 #endif
 
-tcolour pieceClr[] = {PINKCLR,BLUECLR,LCD_COLOR_DARKMAGENTA,LCD_COLOR_DARKCYAN};
+tcolour pieceClr[] = {PINKCLR,BLUECLR,PINKAVAILCLR,BLUEAVAILCLR};
 char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
 
 uint32_t convertedValue;

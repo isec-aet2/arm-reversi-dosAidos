@@ -9,6 +9,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 	}
 	if(htim -> Instance == TIM7){
 		timFlag = 1;
+		if(personFlag){
+			personFlag++;
+		}
 	}
 }
 
@@ -29,46 +32,59 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 void checkMenuTS(){
 	if(tsFlag){
+//		if(touchClr==PINKCLR){
+//			if(personFlag){
+//				printBody(PINKAVAILCLR, thisSide, bodyDisp[thisSide]);
+//			}else{
+//				printBody(PINKCLR, thisSide, bodyDisp[thisSide]);
+//			}
+//		}
+//		if(touchClr==BLUECLR){
+//			if(personFlag){
+//				printBody(BLUEAVAILCLR, thisSide, bodyDisp[thisSide]);
+//			}else{
+//				printBody(BLUECLR, thisSide, bodyDisp[thisSide]);
+//			}
+//		}
 		tsFlag = 0;
 		touch.x = TS_State.touchX[0];
 		touch.y = TS_State.touchY[0];
-		int thisSide = touch.x<LCDXCNTR ? LEFT : RIGHT;
+		thisSide = touch.x<LCDXCNTR ? LEFT : RIGHT;
 		touchClr = BSP_LCD_ReadPixel(touch.x, touch.y);
+		switch(touchClr){
+		case PINKCLR:
+			iClr = PINK;
+			break;
+		case BLUECLR:
+			iClr = BLUE;
+		}
 		if(touchClr==BUTTONCLR || touchClr==BUTTONTXTCLR){
 			btn = toButton(touch.y);
 			colourButton(btn, PRESSEDBUTTONCLR, PRESSEDBUTTONTXTCLR);
 			personFlag = 0;
 			btnLeft = 1;
 			dsFlag = 1;
-		}else if(touchClr==PINKCLR){
-			personFlag++;
+		}else if(touchClr==PINKCLR || touchClr==BLUECLR){
+			personFlag = 1;
 			btnLeft = 1;
 			dsFlag = 1;
-			printBody(PINKAVAILCLR, thisSide, bodyDisp[thisSide]);
-		}else if(touchClr==BLUECLR){
-			personFlag++;
-			btnLeft = 1;
-			dsFlag = 1;
-			printBody(BLUEAVAILCLR, thisSide, bodyDisp[thisSide]);
+			printBody(pieceClr[iClr+AVAILDIF], thisSide, bodyDisp[thisSide]);
 		}else if(btnLeft && touchClr==BCKGND){
 			personFlag = 0;
 			btnLeft = 0;
 			colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
+			printBody(pieceClr[iClr], thisSide, bodyDisp[thisSide]);
 			dsFlag = 0;
 		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		dsFlag = 0;
-		if(personFlag){
-			tside side;
-			if(touch.x<LCDXCNTR){
-				side = LEFT;
-			}
-			if(touch.x>LCDXCNTR){
-				side = RIGHT;
-			}
-			printBody(BCKGND, side, bodyDisp[side]);
-			printBody(!touchClr, side, !bodyDisp[side]);
+		//btnLeft = 0;
+		printBody(pieceClr[iClr], thisSide, bodyDisp[thisSide]);
+		if(personFlag>TRANSSEC){
+			printBody(BCKGND, thisSide, bodyDisp[thisSide]);
+			bodyDisp[thisSide] = !bodyDisp[thisSide];
+			printBody(pieceClr[iClr], thisSide, bodyDisp[thisSide]);
 
 //			if(touchClr==BLUECLR){
 //				if(touch.x<LCDXCNTR){
@@ -83,7 +99,7 @@ void checkMenuTS(){
 //					printMale(BLUECLR);
 //				}
 //			}
-		}else{
+		}else if(!personFlag){
 			//colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 			mode = GAME;
 			printFlag = 1;
@@ -106,6 +122,8 @@ void checkMenuTS(){
 				playAI(touch);
 				play();
 			}
+		}else{
+			printBody(pieceClr[!iClr], thisSide, bodyDisp[thisSide]);
 		}
 	}
 }
