@@ -14,6 +14,7 @@ void printFrame();
 void printBoard();
 void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
+void setMove();
 void convertColour(Coord enemy);
 void printMenu();
 void fillInfo();

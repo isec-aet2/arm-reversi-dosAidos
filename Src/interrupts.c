@@ -77,14 +77,16 @@ void checkMenuTS(){
 			printFlag = 1;
 			switch(btn){
 			case 0:
-				ai = 1;
+				aiFlag = 1;
 				ai2 = 0;
+				iAI = rand()%2;
 				break;
 			case 1:
-				ai = 0;
+				aiFlag = 0;
 				ai2 = 0;
 				break;
 			case 2:
+				aiFlag = 1;
 				ai2 = 1;
 				//BSP_LCD_Clear(BCKGND);
 				touch = chooseMove(avail,remain,targets,game.player);

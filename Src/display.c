@@ -115,6 +115,10 @@ void selectSq(Coord sq){
 	}
 }
 
+void setMove(){
+	BSP_LCD_SetTextColor(pieceClr[game.player+AVAILDIF]);
+	BSP_LCD_FillCircle(toPosX(touch.x)+SQSIZE/2, toPosY(touch.y)+SQSIZE/2, CIRRAD);
+}
 
 void convertColour(Coord enemy){
 	int sign;

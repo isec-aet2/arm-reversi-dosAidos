@@ -43,6 +43,7 @@ void play(){
 		//return;
 	}
 	board[touch.x][touch.y] = game.player;
+	setMove();
 	resetArray(targets,8);
 	findTargets(touch,game.player,targets);
 	for(int i=0; targets[i].x!=NOCOORD; i++){
@@ -65,7 +66,7 @@ void play(){
 			endGame(!game.player);
 		}
 	}
-	if((ai && game.player==ai) || ai2){
+	if((aiFlag && game.player==iAI) || ai2){
 		touch = chooseMove(avail,remain,targets,game.player);
 		playAI(touch);
 		play();
@@ -80,7 +81,7 @@ void initGame(){
 	game.score[PINK] = game.score[BLUE] = 2;
 	game.nPossMoves[PINK] = game.nPossMoves[BLUE] = 4;
 	game.nTimeOut[PINK] = game.nTimeOut[BLUE] = 0;
-	game.player = PINK;
+	game.player = rand()%2;
 }
 
 void endGame(tcontent winner){

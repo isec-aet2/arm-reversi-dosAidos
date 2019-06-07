@@ -37,8 +37,6 @@ int personFlag = 0;
 int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
 tmode mode = MENU;
-_Bool ai;
-_Bool ai2;
 _Bool printFlag = 1;
 tcontent board[ROWS][COLS];
 Coord touch;
@@ -54,6 +52,9 @@ double clockAn = 0;
 _Bool redFlag = 0;
 tcolour touchClr;
 int iClr = 0;
+_Bool iAI;
+_Bool aiFlag;
+_Bool ai2;
 tbody bodyDisp[] = {FEMALE,MALE};
 tside thisSide = 0;
 
