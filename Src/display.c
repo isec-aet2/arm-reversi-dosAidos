@@ -55,49 +55,53 @@ void printBoard(){
 }
 
 void fillInfo(){
+	game.score[PINK] = game.score[BLUE] = game.nPossMoves[PINK] = game.nPossMoves[BLUE] = 0;
+	for(int i=0; i<ROWS; i++){
+		for(int j=0; j<COLS; j++){
+			switch(board[i][j]){
+			case PINK:
+				game.score[PINK]++;
+				break;
+			case BLUE:
+				game.score[BLUE]++;
+				break;
+			case PINKAVAIL:
+				game.nPossMoves[PINK]++;
+				break;
+			case BLUEAVAIL:
+				game.nPossMoves[BLUE]++;
+			case EMPTY:
+				break; //to avoid warnings
+			}
+		}
+	}
 	Time tTime = toTime(game.totalTime);
 	Time pTime[] = {toTime(game.playerTime[PINK]),toTime(game.playerTime[BLUE])};
-	sprintf(info1[0], "%.2d : %.2d : %.2d", tTime.hour, tTime.min, tTime.sec);
+	sprintf(info1[0], "%s\t %.2d : %.2d : %.2d", templ1[0], tTime.hour, tTime.min, tTime.sec);
 	for(int i=PINK; i<=BLUE; i++){
-		sprintf(info2[0][i], "%.2d : %.2d : %.2d", pTime[i].hour, pTime[i].min, pTime[i].sec);
+		sprintf(info2[0][i], "%.2d : %.2d", pTime[i].min, pTime[i].sec);
 		sprintf(info2[1][i], "%d", game.score[i]);
 		sprintf(info2[2][i], "%d", game.nPossMoves[i]);
 		sprintf(info2[3][i], "%d", TIMEOUTMAX-game.nTimeOut[i]);
 	}
 }
 
-void printInfo(_Bool templf){
+void printInfo(_Bool templFlag){
 	BSP_LCD_SetFont(&INFOFONT);
+	BSP_LCD_SetBackColor(BCKGND);
 	BSP_LCD_SetTextColor(INFOCLR);
-//	char totalTimeStr[STRSIZE];
-//	char playerTimeStr[2][STRSIZE];
-//	char scoreStr[2][STRSIZE];
-//	char nPossMovesStr[2][STRSIZE];
-//	char nTimeOutStr[2][STRSIZE];
-
-//	sprintf(totalTimeStr, "Game's total time:\t%.2d : %.2d : %.2d\n", tTime.hour, tTime.min, tTime.sec);
-//	for(int i=PINK,j=LEFT_MODE; i<=BLUE; i++,j--){
-//		sprintf(playerTimeStr[i], "Total time:\t%.2d : %.2d : %.2d\n", pTime[i].hour, pTime[i].min, pTime[i].sec);
-//		sprintf(scoreStr[i], "Score:\t%d\n", game.score[i]);
-//		sprintf(nPossMovesStr[i], "Possible moves:\t%d\n", game.nPossMoves[i]);
-//		sprintf(nTimeOutStr[i], "Timeouts left:\t%d", TIMEOUTMAX-game.nTimeOut[i]);
-//		BSP_LCD_DisplayStringAt(Xpos, Ypos, scoreStr, Mode);
-//		BSP_LCD_DisplayStringAt(Xpos, Ypos, Text, Mode);
-//		BSP_LCD_DisplayStringAt(Xpos, Ypos, Text, Mode);
-//		BSP_LCD_DisplayStringAt(Xpos, Ypos, Text, Mode);
-//	}
 	for(int i=NINFO1; i>0; i--){
-		//BSP_LCD_DisplayStringAt(0, Ypos, templ1[i], CENTER_MODE);
 		BSP_LCD_DisplayStringAt(0, LCDYMAX-INFOYBORDER*i, (uint8_t *)info1[i-1], CENTER_MODE);
 	}
 	for(int i=0; i<NINFO2; i++){
 		for(int j=LEFT; j<=RIGHT; j++){
-			if(templf){
-				BSP_LCD_DisplayStringAt(infotX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, (uint8_t *)templ2[i], LEFT_MODE);
+			if(templFlag){
+				BSP_LCD_DisplayStringAt(infotX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)templ2[i], LEFT_MODE);
 			}
-			BSP_LCD_DisplayStringAt(infoX[j], YINFO+i*(LCDYMAX-YINFO)/NINFO2, (uint8_t *)info2[j][i], RIGHT_MODE);
+			BSP_LCD_DisplayStringAt(infoX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)info2[i][j], RIGHT_MODE);
 		}
 	}
+	templFlag = 0;
 }
 
 void selectSq(Coord sq){
@@ -145,23 +149,6 @@ void printMenu(){
 		colourButton(i, BUTTONCLR, BUTTONTXTCLR);
 	}
 }
-//
-//pPoint createSkirt(pPoint skirt){
-//	Point trip1;
-//	Point trip2;
-//	Point trip3;
-////	trip1.X = TRIP1X;
-////	trip2.X = TRIP2X;
-////	trip3.X = TRIP3X;
-////	trip1.Y = TRIP1Y;
-////	trip2.Y = TRIP2Y;
-////	trip3.Y = TRIP3Y;
-////	skirt[0] = trip1;
-////	skirt[1] = trip2;
-////	skirt[2] = trip3;
-//	return skirt;
-//}
-
 
 void printBody(tcolour colour, tside side, tbody body){
 	BSP_LCD_SetTextColor(colour);
@@ -173,6 +160,21 @@ void printBody(tcolour colour, tside side, tbody body){
 	}
 }
 
-void resetBodies(){
-
+void initSkirt(){
+	ltrip1.X = LTRIP1X;
+	ltrip2.X = LTRIP2X;
+	ltrip3.X = LTRIP3X;
+	rtrip1.X = RTRIP1X;
+	rtrip2.X = RTRIP2X;
+	rtrip3.X = RTRIP3X;
+	ltrip1.Y = rtrip1.Y = TRIP1Y;
+	ltrip2.Y = rtrip2.Y = TRIP2Y;
+	ltrip3.Y = rtrip3.Y = TRIP3Y;
+	skirt[0][0] = ltrip1;
+	skirt[0][1] = ltrip2;
+	skirt[0][2] = ltrip3;
+	skirt[1][0] = rtrip1;
+	skirt[1][1] = rtrip2;
+	skirt[1][2] = rtrip3;
 }
+

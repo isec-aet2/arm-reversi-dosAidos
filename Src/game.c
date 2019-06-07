@@ -6,6 +6,9 @@
 void swapPlayer(){
 	game.player = !game.player;
 	resetClocks();
+	fillInfo();
+	printInfo(0);
+	printBoard();
 }
 
 void playAI(Coord move){
@@ -40,23 +43,30 @@ void play(){
 		//return;
 	}
 	board[touch.x][touch.y] = game.player;
-	resetArray(allEnemies,8);
-	exposeAllEnemies(touch,game.player,allEnemies);
-	for(int i=0; allEnemies[i].x!=NOCOORD; i++){ //converts all the trapped enemies into own's symbols
-		theConverter(allEnemies[i],touch,game.player,1);
+	resetArray(targets,8);
+	findTargets(touch,game.player,targets);
+	for(int i=0; targets[i].x!=NOCOORD; i++){
+		findEnemies(targets[i],touch,game.player,1);
 	}
 	swapPlayer();
 	remain = checkAllMoves(game.player,avail);
 	printBoard();
 	if(!remain){
-		resetBoard();
-		mode = MENU;
-		menuSize = ORIGOPT;
-		printFlag = 1;
 		remain = 0;
+		if(game.score[PINK] > game.score[BLUE]){
+			endGame(PINK);
+		}else if(game.score[BLUE] > game.score[PINK]){
+			endGame(!game.player);
+		}else if(game.playerTime[PINK] < game.playerTime[BLUE]){
+			endGame(PINK);
+		}else if(game.playerTime[BLUE] < game.playerTime[PINK]){
+			endGame(BLUE);
+		}else{
+			endGame(!game.player);
+		}
 	}
 	if((ai && game.player==ai) || ai2){
-		touch = chooseMove(avail,remain,allEnemies,game.player);
+		touch = chooseMove(avail,remain,targets,game.player);
 		playAI(touch);
 		play();
 	}
@@ -73,20 +83,8 @@ void initGame(){
 	game.player = PINK;
 }
 
-void initSkirt(){
-	ltrip1.X = LTRIP1X;
-	ltrip2.X = LTRIP2X;
-	ltrip3.X = LTRIP3X;
-	rtrip1.X = RTRIP1X;
-	rtrip2.X = RTRIP2X;
-	rtrip3.X = RTRIP3X;
-	ltrip1.Y = rtrip1.Y = TRIP1Y;
-	ltrip2.Y = rtrip2.Y = TRIP2Y;
-	ltrip3.Y = rtrip3.Y = TRIP3Y;
-	skirt[0][0] = ltrip1;
-	skirt[0][1] = ltrip2;
-	skirt[0][2] = ltrip3;
-	skirt[1][0] = rtrip1;
-	skirt[1][1] = rtrip2;
-	skirt[1][2] = rtrip3;
+void endGame(tcontent winner){
+	mode = MENU;
+	menuSize = ORIGOPT;
+	printFlag = 1;
 }

@@ -16,9 +16,10 @@ void selectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
 void convertColour(Coord enemy);
 void printMenu();
+void fillInfo();
 void printInfo(_Bool templf);
-//pPoint createSkirt(pPoint skirt);
 pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
 void printBody(tcolour colour, tside side, tbody body);
+void initSkirt();
 
 #endif

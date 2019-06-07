@@ -24,9 +24,9 @@ int toButton(int posY){
 
 Time toTime(int total){
 	Time time;
-	time.hour = (total%60)%60;
+	time.sec = total%60%60;
 	total /= 60;
 	time.min = total%60;
-	time.sec = total/60;
+	time.hour = total/60;
 	return time;
 }

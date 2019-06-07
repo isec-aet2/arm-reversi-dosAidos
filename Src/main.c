@@ -21,45 +21,11 @@
 
 #ifndef _ST_
 #define _ST_
-
-//typedef int tcolour;
-//typedef enum _tmode {MENU,GAME} tmode;
-//typedef enum _tcontent {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
-
 typedef struct _coord{
 	int x;
 	int y;
 }Coord;
-
-//typedef struct _time{
-//	int sec;
-//	int min;
-//	int hour;
-//}Time;
-
-//typedef struct __game{
-	//Time game.totalTime;
-	//Time game.playerTime[2];
-//	char game.playerName[2][STRSIZE];
-//	int score[2];
-//	int nPossMoves[2];
-//	int nTimeOut[2];
-//	_Bool game.player;
-//}GameInfo;
-
-
-
 #endif
-
-//typedef struct _game{
-//	//Time game.totalTime;
-//	//Time game.playerTime[2];
-//	//char game.playerName[2][STRSIZE];
-//	int score[2];
-//	int nPossMoves[2];
-//	int nTimeOut[2];
-//	int game.player;
-//}Game;
 
 int timCount = 0;
 _Bool timFlag = 0;
@@ -79,7 +45,7 @@ Coord touch;
 Coord prev;
 int btn;
 Coord avail[ROWS*COLS];
-Coord allEnemies[8];
+Coord targets[8];
 int remain = 0;
 _Bool configFlag = 0;
 _Bool newGame = 1;
@@ -93,27 +59,6 @@ tside thisSide = 0;
 
 Game game;
 //game.totalTime = 0;
-//game.playerTime[] = {0,0};
-//game.score[] = {2,2};
-//game.nPossMoves[] = {4,4};
-//game.nTimeOut[] = {0,0};
-
-
-#ifdef _ST_
-
-//struct _game game;
-//game.totalTime = 0;
-//game.playerTime = {0,0};
-//game.playerName = {"PINKCLR","BLUECLR"};
-//char game.playerName[2][STRSIZE];
-//int score[2];
-//int nPossMoves[2];
-//int nTimeOut[2];
-//_Bool game.player;
-
-
-
-#endif
 
 tcolour pieceClr[] = {PINKCLR,BLUECLR,PINKAVAILCLR,BLUEAVAILCLR};
 char menuOpt[][STRSIZE] = {"NI vs AI","NI vs NI","AI vs AI","Resume game"};
@@ -196,9 +141,7 @@ int main(){
 
 	initSkirt();
 
-	if(!configFlag){
-		configs();
-	}
+	configs();
 
 	while (1)
 	{
@@ -219,13 +162,17 @@ int main(){
 		case GAME:
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
+				resetBoard();
 				printBoard();
 				resetClocks();
+				initGame();
+				fillInfo();
+				printInfo(1);
 				printFlag = 0;
 			}
 			checkGameTS();
 		case NONE:
-			continue;
+			break;
 			//included to avoid warnings
 		}
 	}

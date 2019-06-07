@@ -54,7 +54,10 @@ SDRAM_HandleTypeDef hsdram1;
 
 typedef uint32_t tcolour;
 typedef enum _mode {MENU,GAME,NONE} tmode;
+#ifndef _TC_
+#define _TC_
 typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
+#endif
 #ifndef _TYPES_
 #define _TYPES_
 typedef enum _side {LEFT, RIGHT} tside;
@@ -109,17 +112,17 @@ void configs();
 
 #define MFONT					  Font24
 #define MFONTSIZE				24
-#define INFOFONT				  Font20
+#define INFOFONT				  Font12
 #define INFOCLR					  LCD_COLOR_BLACK
-#define INFOXBORDER				99
-#define INFOYBORDER				 5
+#define INFOXBORDER				30
+#define INFOYBORDER				20
 #define NINFO1					 1
 #define NINFO2					 4
-#define YINFO					  (CLCKCNTRY+CLCKRAD+INFOXBORDER)
-#define LINFO					50
-#define RINFO					  (LCDXCNTR+SQSIZE*COLS/2+LINFO)
-#define LINFOT					  LINFO
-#define RINFOT					  RINFO
+#define YINFO					  (CLCKCNTRY+CLCKRAD)
+#define LINFOT					  INFOXBORDER
+#define RINFOT					  (LCDXCNTR+SQSIZE*COLS/2+RINFO)
+#define LINFO					  RINFOT
+#define RINFO					  LINFOT
 
 #define TOUCHDELAY				12
 #define AIDELAY				   100
@@ -127,7 +130,7 @@ void configs();
 #define CLRSPEED			     1
 
 #define BCKGND					  LCD_COLOR_WHITE
-#define FRAMECLR				  LCD_COLOR_LIGHTGRAY
+#define FRAMECLR				  BCKGND
 #define BUTTONCLR				  LCD_COLOR_LIGHTGRAY
 #define BUTTONTXTCLR			  LCD_COLOR_BLACK
 #define PRESSEDBUTTONCLR		  LCD_COLOR_DARKGRAY
@@ -139,14 +142,14 @@ void configs();
 
 #define TIMEOUTSEC				20
 #define TIMEOUTMAX				 3
-#define LCLCKCNTRX			   100
+#define LCLCKCNTRX			   	  (BORDERX/2)
 #define RCLCKCNTRX				  (LCDXCNTR*2-LCLCKCNTRX)
 #define CLCKCNTRY			   100
 #define CLCKRAD					55
 #define CLCKSPEED			0.0001
 #define DANGERFR			  0.75
 #define CLCKBKG					  (LCD_COLOR_WHITE-1)
-#define CLCKFRAME				  LCD_COLOR_BLACK
+#define CLCKFRAME				  (LCD_COLOR_BLACK+1)
 #define DANGERCLR				  LCD_COLOR_RED
 
 #define ROWS 					 8
@@ -249,7 +252,7 @@ extern tcolour pieceClr[NCONT];
 extern char menuOpt[ORIGOPT+1][STRSIZE];
 extern tcontent board[ROWS][COLS];
 extern Coord avail[ROWS*COLS];
-extern Coord allEnemies[8];
+extern Coord targets[8];
 extern int clckcntrX[2];
 extern int headX[2];
 extern int bodyX[2];

@@ -32,20 +32,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 void checkMenuTS(){
 	if(tsFlag){
-//		if(touchClr==PINKCLR){
-//			if(personFlag){
-//				printBody(PINKAVAILCLR, thisSide, bodyDisp[thisSide]);
-//			}else{
-//				printBody(PINKCLR, thisSide, bodyDisp[thisSide]);
-//			}
-//		}
-//		if(touchClr==BLUECLR){
-//			if(personFlag){
-//				printBody(BLUEAVAILCLR, thisSide, bodyDisp[thisSide]);
-//			}else{
-//				printBody(BLUECLR, thisSide, bodyDisp[thisSide]);
-//			}
-//		}
 		tsFlag = 0;
 		touch.x = TS_State.touchX[0];
 		touch.y = TS_State.touchY[0];
@@ -79,26 +65,12 @@ void checkMenuTS(){
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		dsFlag = 0;
-		//btnLeft = 0;
+		btnLeft = 0;
 		printBody(pieceClr[iClr], thisSide, bodyDisp[thisSide]);
 		if(personFlag>TRANSSEC){
 			printBody(BCKGND, thisSide, bodyDisp[thisSide]);
 			bodyDisp[thisSide] = !bodyDisp[thisSide];
 			printBody(pieceClr[iClr], thisSide, bodyDisp[thisSide]);
-
-//			if(touchClr==BLUECLR){
-//				if(touch.x<LCDXCNTR){
-//					printFemale(PINKCLR);
-//				}else{
-//					printMale(PINKCLR);
-//				}
-//			}else if(touchClr==PINKCLR){
-//				if(touch.x<LCDXCNTR){
-//					printFemale(BLUECLR);
-//				}else{
-//					printMale(BLUECLR);
-//				}
-//			}
 		}else if(!personFlag){
 			//colourButton(btn, BUTTONCLR, BUTTONTXTCLR);
 			mode = GAME;
@@ -107,18 +79,15 @@ void checkMenuTS(){
 			case 0:
 				ai = 1;
 				ai2 = 0;
-				resetBoard();
 				break;
 			case 1:
 				ai = 0;
 				ai2 = 0;
-				resetBoard();
 				break;
 			case 2:
 				ai2 = 1;
-				BSP_LCD_Clear(BCKGND);
-				resetBoard();
-				touch = chooseMove(avail,remain,allEnemies,game.player);
+				//BSP_LCD_Clear(BCKGND);
+				touch = chooseMove(avail,remain,targets,game.player);
 				playAI(touch);
 				play();
 			}
@@ -160,6 +129,7 @@ void checkTIM7(){
 		timFlag = 0;
 		//timCount++;
 		game.totalTime++;
+		game.playerTime[game.player]++;
 		if(game.totalTime%2){
 			HAL_StatusTypeDef status=HAL_ADC_PollForConversion(&hadc1,TEMP_REFRESH_PERIOD);
 			if(status==HAL_OK){
@@ -172,6 +142,10 @@ void checkTIM7(){
 				BSP_LCD_DisplayStringAt(0, 1, (uint8_t *)temp, RIGHT_MODE);
 			}
 		}
+		if(mode==GAME){
+			fillInfo();
+			printInfo(0);
+		}
 	}
 }
 
@@ -180,8 +154,7 @@ void checkTIM6(){
 		clockAn += 0.01;
 		clockFlag = 0;
 		if(clockAn==0){
-			analogClock(CLCKBKG,LEFT);
-			analogClock(CLCKBKG,RIGHT);
+			resetClocks();
 		}
 		if(clockAn<15){
 			printCountdown(clockAn,pieceClr[game.player],(tside)game.player);
@@ -193,13 +166,18 @@ void checkTIM6(){
 			}
 			printCountdown(clockAn,DANGERCLR,(tside)game.player);
 		}else{
+			if(game.nTimeOut[game.player]<TIMEOUTMAX){
+				game.nTimeOut[game.player]++;
+			}else{
+				endGame(!game.player);
+			}
 			swapPlayer();
 		}
 	}
 }
 
 _Bool checkPB(){
-	if(pbFlag){
+	if(pbFlag && mode==GAME){
 		pbFlag = 0;
 //		mode = MENU;
 //		printFlag = 1;

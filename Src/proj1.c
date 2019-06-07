@@ -24,13 +24,13 @@ int chooseBest(int possMoves[], int nAvail){
 	return possMoves[bestMoves[r]];
 }
 
-Coord chooseMove(Coord avail[], int nAvail, Coord allEnemies[], _Bool player){
+Coord chooseMove(Coord avail[], int nAvail, Coord targets[], _Bool player){
 	int possMoves[nAvail];
 	for(int i=0; i<nAvail; i++){
 		int nEnemies = 0;
-		int nDirec = exposeAllEnemies(avail[i],player,allEnemies);
+		int nDirec = findTargets(avail[i],player,targets);
 		for(int j=0; j<nDirec; j++){
-			nEnemies += theConverter(allEnemies[j],avail[i],player,0);
+			nEnemies += findEnemies(targets[j],avail[i],player,0);
 		}
 		possMoves[i] = nEnemies;
 	}
@@ -100,7 +100,7 @@ _Bool checkTrapped(_Bool player, Coord empty, Coord enemy){ //checks if the enem
     }
 }
 
-int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the allEnemies[] array
+int findTargets(Coord move, _Bool player, Coord targets[]){ //fills the allEnemies[] array
     int n = 0;
     for(int i=-1; i<=1; i++){ //checks if we don't cross the matrix's borders
 		if(move.x+i>=ROWS || move.x+i<0){
@@ -115,7 +115,7 @@ int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the 
 				enemy.x = i;
 				enemy.y = j;
 				if(checkTrapped(player,move,enemy)){ //checks if the enemies are trapped, and, if so, stores the coordinates' differences from the move in the allEnemies array
-					allEnemies[n] = enemy;
+					targets[n] = enemy;
 					n++;
 				}
 			}
@@ -124,7 +124,7 @@ int exposeAllEnemies(Coord move, _Bool player, Coord allEnemies[]){ //fills the 
     return n;
 }
 
-int theConverter(Coord direction, Coord move, _Bool player, _Bool conv){ //converts the trapped enemy's pieces to player's pieces
+int findEnemies(Coord direction, Coord move, _Bool player, _Bool conv){ //converts the trapped enemy's pieces to player's pieces
     int nEnemies = 0;
     move.x += direction.x;
     move.y += direction.y;

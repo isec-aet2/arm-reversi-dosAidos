@@ -39,6 +39,6 @@ void printClock(tside side){
 
 void resetClocks(){
 	clockAn = 0;
-	analogClock(CLCKBKG,LCLCKCNTRX);
-	analogClock(CLCKBKG,RCLCKCNTRX);
+	analogClock(CLCKBKG,LEFT);
+	analogClock(CLCKBKG,RIGHT);
 }
