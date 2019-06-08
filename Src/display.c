@@ -86,7 +86,7 @@ void fillInfo(){
 	}
 }
 
-void printInfo(_Bool templFlag){
+void printInfo(_Bool templFlag, _Bool newMoveFlag){
 	BSP_LCD_SetFont(&INFOFONT);
 	BSP_LCD_SetBackColor(BCKGND);
 	BSP_LCD_SetTextColor(INFOCLR);
@@ -99,9 +99,11 @@ void printInfo(_Bool templFlag){
 				BSP_LCD_DisplayStringAt(infotX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)templ2[i], LEFT_MODE);
 			}
 			BSP_LCD_DisplayStringAt(infoX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)info2[i][j], RIGHT_MODE);
+			if(!newMoveFlag && j==RIGHT){
+				return;
+			}
 		}
 	}
-	templFlag = 0;
 }
 
 void selectSq(Coord sq){
@@ -137,6 +139,9 @@ void convertColour(Coord enemy){
 		BSP_LCD_FillCircle(toPosX(enemy.x)+SQSIZE/2, toPosY(enemy.y)+SQSIZE/2, CIRRAD);
 		HAL_Delay(CLRDELAY);
 	}
+	checkPB();
+	checkTIM6();
+	checkTIM7();
 }
 
 void colourButton(int btn, int btnClr, int txtClr){

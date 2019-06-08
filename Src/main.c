@@ -168,10 +168,12 @@ int main(){
 				resetClocks();
 				initGame();
 				fillInfo();
-				printInfo(1);
+				printInfo(1,1);
 				printFlag = 0;
 			}
 			checkGameTS();
+		case END:
+			checkEndTS();
 		case NONE:
 			break;
 			//included to avoid warnings

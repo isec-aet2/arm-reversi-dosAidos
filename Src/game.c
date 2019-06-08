@@ -2,13 +2,27 @@
 #include "game.h"
 
 
-
 void swapPlayer(){
 	game.player = !game.player;
 	resetClocks();
+	remain = checkAllMoves(game.player,avail);
 	fillInfo();
-	printInfo(0);
+	printInfo(0,1);
 	printBoard();
+	if(!remain){
+		remain = 0;
+		if(game.score[PINK] > game.score[BLUE]){
+			endGame(PINK);
+		}else if(game.score[BLUE] > game.score[PINK]){
+			endGame(!game.player);
+		}else if(game.playerTime[PINK] < game.playerTime[BLUE]){
+			endGame(PINK);
+		}else if(game.playerTime[BLUE] < game.playerTime[PINK]){
+			endGame(BLUE);
+		}else{
+			endGame(!game.player);
+		}
+	}
 }
 
 void playAI(Coord move){
@@ -20,6 +34,11 @@ void playAI(Coord move){
 	int difX = (move.x>pass.x)*2-1;
 	int difY = (move.y>pass.y)*2-1;
 	while(pass.x!=move.x || pass.y!=move.y){
+		checkPB();
+		checkTIM6();
+		checkTIM7();
+		fillInfo();
+		printInfo(0,0);
 		if(pass.x!=move.x){
 			if(!(rand()%3)){
 				pass.x += difX;
@@ -50,22 +69,6 @@ void play(){
 		findEnemies(targets[i],touch,game.player,1);
 	}
 	swapPlayer();
-	remain = checkAllMoves(game.player,avail);
-	printBoard();
-	if(!remain){
-		remain = 0;
-		if(game.score[PINK] > game.score[BLUE]){
-			endGame(PINK);
-		}else if(game.score[BLUE] > game.score[PINK]){
-			endGame(!game.player);
-		}else if(game.playerTime[PINK] < game.playerTime[BLUE]){
-			endGame(PINK);
-		}else if(game.playerTime[BLUE] < game.playerTime[PINK]){
-			endGame(BLUE);
-		}else{
-			endGame(!game.player);
-		}
-	}
 	if((aiFlag && game.player==iAI) || ai2){
 		touch = chooseMove(avail,remain,targets,game.player);
 		playAI(touch);
@@ -85,7 +88,10 @@ void initGame(){
 }
 
 void endGame(tcontent winner){
-	mode = MENU;
-	menuSize = ORIGOPT;
-	printFlag = 1;
+	mode = END;
+	BSP_LCD_Clear(pieceClr[winner]);
+	BSP_LCD_SetBackColor(pieceClr[winner]);
+	BSP_LCD_SetFont(&ENDFONT);
+	BSP_LCD_SetTextColor(pieceClr[winner+AVAILDIF]);
+	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t*)"GAME OVER", CENTER_MODE);
 }

@@ -53,7 +53,7 @@ SDRAM_HandleTypeDef hsdram1;
 
 
 typedef uint32_t tcolour;
-typedef enum _mode {MENU,GAME,NONE} tmode;
+typedef enum _mode {MENU,GAME,END,NONE} tmode;
 #ifndef _TC_
 #define _TC_
 typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
@@ -112,6 +112,7 @@ void configs();
 
 #define MFONT					  Font24
 #define MFONTSIZE				24
+#define ENDFONT				      Font24
 #define INFOFONT				  Font12
 #define INFOCLR					  LCD_COLOR_BLACK
 #define INFOXBORDER				30

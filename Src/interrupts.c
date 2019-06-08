@@ -88,7 +88,7 @@ void checkMenuTS(){
 			case 2:
 				aiFlag = 1;
 				ai2 = 1;
-				//BSP_LCD_Clear(BCKGND);
+				BSP_LCD_Clear(BCKGND);
 				touch = chooseMove(avail,remain,targets,game.player);
 				playAI(touch);
 				play();
@@ -126,6 +126,18 @@ void checkGameTS(){
 	}
 }
 
+void checkEndTS(){
+	if(tsFlag){
+		tsFlag = 0;
+		HAL_Delay(TOUCHDELAY);
+	}else if(dsFlag){
+		dsFlag = 0;
+		mode = MENU;
+		menuSize = ORIGOPT;
+		printFlag = 1;
+	}
+}
+
 void checkTIM7(){
 	if(timFlag){
 		timFlag = 0;
@@ -146,7 +158,7 @@ void checkTIM7(){
 		}
 		if(mode==GAME){
 			fillInfo();
-			printInfo(0);
+			printInfo(0,0);
 		}
 	}
 }
