@@ -113,7 +113,21 @@ void selectSq(Coord sq){
 	BSP_LCD_DrawRect(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
 	if(board[sq.x][sq.y]!=EMPTY){
 		BSP_LCD_SetTextColor(pieceClr[board[sq.x][sq.y]]);
-	BSP_LCD_FillCircle(toPosX(sq.x)+SQSIZE/2.0, toPosY(sq.y)+SQSIZE/2.0, CIRRAD);
+		BSP_LCD_FillCircle(toPosX(sq.x)+SQSIZE/2.0, toPosY(sq.y)+SQSIZE/2.0, CIRRAD);
+	}
+}
+
+void deselectSq(Coord sq){
+	BSP_LCD_SetTextColor(BOARDCLR);
+	BSP_LCD_FillRect(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
+	BSP_LCD_SetTextColor(GRIDCLR);
+	BSP_LCD_DrawLine(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y), toPosX(sq.x)+SELECTEDDIF/2, toPosY(sq.y));
+	BSP_LCD_DrawLine(toPosX(sq.x), toPosY(sq.y)-SELECTEDDIF/2, toPosX(sq.x), toPosY(sq.y)+SELECTEDDIF/2);
+	BSP_LCD_DrawLine(toPosX(sq.x)+SQSIZE+SELECTEDDIF/2, toPosY(sq.y)+SQSIZE, toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)+SQSIZE);
+	BSP_LCD_DrawLine(toPosX(sq.x)+SQSIZE, toPosY(sq.y)+SQSIZE+SELECTEDDIF/2, toPosX(sq.x)+SQSIZE, toPosY(sq.y)-SELECTEDDIF/2);
+	if(board[sq.x][sq.y]!=EMPTY){
+		BSP_LCD_SetTextColor(pieceClr[board[sq.x][sq.y]]);
+		BSP_LCD_FillCircle(toPosX(sq.x)+SQSIZE/2.0, toPosY(sq.y)+SQSIZE/2.0, CIRRAD);
 	}
 }
 

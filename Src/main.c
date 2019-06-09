@@ -170,26 +170,10 @@ int main(){
 				printInfo(HEAD,NEWMOVE);
 				printFlag = 0;
 			}
-			if(ai2Flag || game.player==iAI){
-				touch = chooseMove(avail,remain,targets,game.player);
-				playAI(touch);
-				playFlag = 1;
-			}else{
-				if(checkGameTS()){
-					board[touch.x][touch.y] = game.player;
-					playFlag = 1;
-				}
-			}
-			if(playFlag){
-				playFlag = 0;
-				resetArray(targets,8);
-				findTargets(touch,game.player,targets);
-				for(int i=0; targets[i].x!=NOCOORD; i++){
-					findEnemies(targets[i],touch,game.player,CONVERT);
-				}
-				swapPlayer();
-			}
-			printInfo(!HEAD,!NEWMOVE);
+//			if(ai2 || player==iAI){
+//				play();
+//			}
+			checkGameTS();
 		case END:
 			checkEndTS();
 		case NONE:
