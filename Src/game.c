@@ -55,6 +55,12 @@ void playAI(Coord move){
 	}
 }
 
+void playNI(){
+	if(checkGameTS()){
+		board[touch.x][touch.y] = game.player;
+	}
+}
+
 void play(){
 	checkTIM6();
 	checkTIM7();

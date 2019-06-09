@@ -171,6 +171,9 @@ int main(){
 				printInfo(1,1);
 				printFlag = 0;
 			}
+//			if(ai2 || player==iAI){
+//				play();
+//			}
 			checkGameTS();
 		case END:
 			checkEndTS();

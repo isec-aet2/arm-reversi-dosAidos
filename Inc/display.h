@@ -13,6 +13,7 @@ typedef enum _body {FEMALE,MALE} tbody;
 void printFrame();
 void printBoard();
 void selectSq(Coord sq);
+void deselectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
 void setMove();
 void convertColour(Coord enemy);
