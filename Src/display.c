@@ -77,7 +77,7 @@ void fillInfo(){
 	}
 	Time tTime = toTime(game.totalTime);
 	Time pTime[] = {toTime(game.playerTime[PINK]),toTime(game.playerTime[BLUE])};
-	sprintf(info1[0], "%s\t %.2d : %.2d : %.2d", templ1[0], tTime.hour, tTime.min, tTime.sec);
+	sprintf(info1[0], "%s\t %.2d : %.2d : %.2d", head1[0], tTime.hour, tTime.min, tTime.sec);
 	for(int i=PINK; i<=BLUE; i++){
 		sprintf(info2[0][i], "%.2d : %.2d", pTime[i].min, pTime[i].sec);
 		sprintf(info2[1][i], "%d", game.score[i]);
@@ -86,7 +86,7 @@ void fillInfo(){
 	}
 }
 
-void printInfo(_Bool templFlag, _Bool newMoveFlag){
+void printInfo(_Bool headFlag, _Bool newMoveFlag){
 	BSP_LCD_SetFont(&INFOFONT);
 	BSP_LCD_SetBackColor(BCKGND);
 	BSP_LCD_SetTextColor(INFOCLR);
@@ -95,8 +95,8 @@ void printInfo(_Bool templFlag, _Bool newMoveFlag){
 	}
 	for(int i=0; i<NINFO2; i++){
 		for(int j=LEFT; j<=RIGHT; j++){
-			if(templFlag){
-				BSP_LCD_DisplayStringAt(infotX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)templ2[i], LEFT_MODE);
+			if(headFlag){
+				BSP_LCD_DisplayStringAt(infotX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)head2[i], LEFT_MODE);
 			}
 			BSP_LCD_DisplayStringAt(infoX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)info2[i][j], RIGHT_MODE);
 			if(!newMoveFlag && j==RIGHT){

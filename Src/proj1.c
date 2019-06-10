@@ -29,7 +29,7 @@ Coord chooseMove(Coord avail[], int nAvail, Coord targets[], _Bool player){
 		int nEnemies = 0;
 		int nDirec = findTargets(avail[i],player,targets);
 		for(int j=0; j<nDirec; j++){
-			nEnemies += findEnemies(targets[j],avail[i],player,0);
+			nEnemies += findEnemies(targets[j],avail[i],player,!CONVERT);
 		}
 		possMoves[i] = nEnemies;
 	}
