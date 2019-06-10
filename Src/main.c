@@ -54,7 +54,8 @@ tcolour touchClr;
 int iClr = 0;
 _Bool iAI;
 _Bool aiFlag;
-_Bool ai2;
+_Bool ai2Flag;
+_Bool playFlag = 0;
 tbody bodyDisp[] = {FEMALE,MALE};
 tside thisSide = 0;
 
@@ -76,8 +77,8 @@ int infoX[] = {LINFO,RINFO};
 
 char info1[NINFO1][STRSIZE];
 char info2[NINFO2][2][STRSIZE];
-char templ1[NINFO1][STRSIZE] = {"Game's total time:"};
-char templ2[NINFO2][STRSIZE] = {"Total time:","Score:","Possible moves:","Timeouts left:"};
+char head1[NINFO1][STRSIZE] = {"Game's total time:"};
+char head2[NINFO2][STRSIZE] = {"Total time:","Score:","Possible moves:","Timeouts left:"};
 
 Point ltrip1;
 Point ltrip2;
@@ -96,9 +97,9 @@ void debug(char * text){
 	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t *)text, RIGHT_MODE);
 }
 
-
-
 void configs(){
+	initSkirt();
+
 	srand(time(NULL));
 
 	SCB_EnableICache();
@@ -140,8 +141,6 @@ void configs(){
 
 int main(){
 
-	initSkirt();
-
 	configs();
 
 	while (1)
@@ -168,10 +167,29 @@ int main(){
 				resetClocks();
 				initGame();
 				fillInfo();
-				printInfo(1,1);
+				printInfo(HEAD,NEWMOVE);
 				printFlag = 0;
 			}
-			checkGameTS();
+			if(ai2Flag || game.player==iAI){
+				touch = chooseMove(avail,remain,targets,game.player);
+				playAI(touch);
+				playFlag = 1;
+			}else{
+				if(checkGameTS()){
+					board[touch.x][touch.y] = game.player;
+					playFlag = 1;
+				}
+			}
+			if(playFlag){
+				playFlag = 0;
+				resetArray(targets,8);
+				findTargets(touch,game.player,targets);
+				for(int i=0; targets[i].x!=NOCOORD; i++){
+					findEnemies(targets[i],touch,game.player,CONVERT);
+				}
+				swapPlayer();
+			}
+			printInfo(!HEAD,!NEWMOVE);
 		case END:
 			checkEndTS();
 		case NONE:

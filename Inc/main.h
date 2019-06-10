@@ -188,6 +188,10 @@ void configs();
 #define TRIP3Y					  (BODYY+BODYHEIGHT)
 #define DECAP					10
 
+#define CONVERT					 1
+#define HEAD					 1
+#define NEWMOVE					 1
+
 
 typedef struct _game{
 	//Time totalTime;
@@ -234,7 +238,7 @@ extern tbody thisBody;
 extern int iClr;
 extern _Bool iAI;
 extern _Bool aiFlag;
-extern _Bool ai2;
+extern _Bool ai2Flag;
 extern int btn;
 extern int remain;
 extern _Bool configFlag;
@@ -271,8 +275,8 @@ extern Point rtrip3;
 extern Point skirt[2][3];
 extern tbody bodyDisp[2];
 extern Game game;
-extern char templ1[NINFO1][STRSIZE];
-extern char templ2[NINFO2][STRSIZE];
+extern char head1[NINFO1][STRSIZE];
+extern char head2[NINFO2][STRSIZE];
 extern char info1[NINFO1][STRSIZE];
 extern char info2[NINFO2][2][STRSIZE];
 

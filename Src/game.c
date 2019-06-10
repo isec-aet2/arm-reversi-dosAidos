@@ -7,7 +7,7 @@ void swapPlayer(){
 	resetClocks();
 	remain = checkAllMoves(game.player,avail);
 	fillInfo();
-	printInfo(0,1);
+	printInfo(!HEAD,NEWMOVE);
 	printBoard();
 	if(!remain){
 		remain = 0;
@@ -69,7 +69,7 @@ void play(){
 		findEnemies(targets[i],touch,game.player,1);
 	}
 	swapPlayer();
-	if((aiFlag && game.player==iAI) || ai2){
+	if((aiFlag && game.player==iAI) || ai2Flag){
 		touch = chooseMove(avail,remain,targets,game.player);
 		playAI(touch);
 		play();
