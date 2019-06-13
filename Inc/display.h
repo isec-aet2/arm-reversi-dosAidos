@@ -23,6 +23,7 @@ void printInfo(_Bool headFlag, _Bool newMoveFlag);
 pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
 void printBody(tcolour colour, tside side, tbody body);
 void initSkirt();
+void printSnowBall();
 
 #endif
 

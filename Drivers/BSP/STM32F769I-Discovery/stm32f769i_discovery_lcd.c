@@ -1220,6 +1220,9 @@ void BSP_LCD_DrawCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
   int32_t   D;    /* Decision Variable */
   uint32_t  CurX; /* Current X Value */
   uint32_t  CurY; /* Current Y Value */
+  int xpcx, xmcx, ypcx, ymcx, xpcy, xmcy, ypcy, ymcy;
+  int xmax = BSP_LCD_GetXSize();
+  int ymax = BSP_LCD_GetYSize();
 
   D = 3 - (Radius << 1);
   CurX = 0;
@@ -1227,21 +1230,38 @@ void BSP_LCD_DrawCircle(uint16_t Xpos, uint16_t Ypos, uint16_t Radius)
 
   while (CurX <= CurY)
   {
-    BSP_LCD_DrawPixel((Xpos + CurX), (Ypos - CurY), DrawProp[ActiveLayer].TextColor);
+	  xmcx=(Xpos - CurX);
+	  xpcx=(Xpos + CurX);
+	  ymcx=(Ypos - CurX);
+	  ypcx=(Ypos + CurX);
+	  xmcy=(Xpos - CurY);
+	  xpcy=(Xpos + CurY);
+	  ymcy=(Ypos - CurY);
+	  ypcy=(Ypos + CurY);
+	  if(xmcx<0) xmcx=0;
+	  if(xpcx>xmax) xpcx=xmax;
+	  if(ymcx<0) ymcx=0;
+	  if(ypcx>ymax) ypcx=ymax;
+	  if(xmcy<0) xmcy=0;
+	  if(xpcy>xmax) xpcy=xmax;
+	  if(ymcy<0) ymcy=0;
+	  if(ypcy>ymax) ypcy=ymax;
 
-    BSP_LCD_DrawPixel((Xpos - CurX), (Ypos - CurY), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xpcx, ymcy, DrawProp[ActiveLayer].TextColor);
 
-    BSP_LCD_DrawPixel((Xpos + CurY), (Ypos - CurX), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xmcx, ymcy, DrawProp[ActiveLayer].TextColor);
 
-    BSP_LCD_DrawPixel((Xpos - CurY), (Ypos - CurX), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xpcy, ymcx, DrawProp[ActiveLayer].TextColor);
 
-    BSP_LCD_DrawPixel((Xpos + CurX), (Ypos + CurY), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xmcy, ymcx, DrawProp[ActiveLayer].TextColor);
 
-    BSP_LCD_DrawPixel((Xpos - CurX), (Ypos + CurY), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xpcx, ypcy, DrawProp[ActiveLayer].TextColor);
 
-    BSP_LCD_DrawPixel((Xpos + CurY), (Ypos + CurX), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xmcx, ypcy, DrawProp[ActiveLayer].TextColor);
 
-    BSP_LCD_DrawPixel((Xpos - CurY), (Ypos + CurX), DrawProp[ActiveLayer].TextColor);
+    BSP_LCD_DrawPixel(xpcy, ypcx, DrawProp[ActiveLayer].TextColor);
+
+    BSP_LCD_DrawPixel(xmcy, ypcx, DrawProp[ActiveLayer].TextColor);
 
     if (D < 0)
     {

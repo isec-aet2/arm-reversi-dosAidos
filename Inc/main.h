@@ -92,9 +92,6 @@ void configs();
 #define AVG_SLOPE               25
 #define VREF                  3300
 
-#define PINKCLR					  LCD_COLOR_MAGENTA
-#define BLUECLR					  LCD_COLOR_CYAN
-
 #define LCDXCNTR				  (800/2)
 #define LCDYMAX					  480
 
@@ -159,10 +156,13 @@ void configs();
 #define AVAILDIF		    	  (PINKAVAIL-PINK)
 #define TRUE 					 1
 #define FALSE 					 0
+#define PINKCLR					  LCD_COLOR_MAGENTA
+#define BLUECLR					  LCD_COLOR_CYAN
 #define PINKAVAILCLR			  LCD_COLOR_DARKMAGENTA
 #define BLUEAVAILCLR			  LCD_COLOR_DARKCYAN
 #define BOARDCLR				  LCD_COLOR_BLACK
 #define GRIDCLR					  LCD_COLOR_WHITE
+#define SBCLR					  LCD_COLOR_WHITE
 
 #define R	 			0x00000100
 #define G	 			0x00010000
@@ -188,9 +188,12 @@ void configs();
 #define TRIP3Y					  (BODYY+BODYHEIGHT)
 #define DECAP					10
 
+#define CONVERT					 1
 #define HEAD					 1
 #define NEWMOVE					 1
-#define CONVERT					 1
+#define TIMEOUT					 1
+#define DANGER					 1
+
 
 typedef struct _game{
 	//Time totalTime;
@@ -276,6 +279,7 @@ extern char head1[NINFO1][STRSIZE];
 extern char head2[NINFO2][STRSIZE];
 extern char info1[NINFO1][STRSIZE];
 extern char info2[NINFO2][2][STRSIZE];
+extern int sizeSB;
 
 /* USER CODE END Private defines */
 

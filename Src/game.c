@@ -94,4 +94,5 @@ void endGame(tcontent winner){
 	BSP_LCD_SetFont(&ENDFONT);
 	BSP_LCD_SetTextColor(pieceClr[winner+AVAILDIF]);
 	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t*)"GAME OVER", CENTER_MODE);
+	sizeSB = 1;
 }

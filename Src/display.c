@@ -206,3 +206,10 @@ void initSkirt(){
 	skirt[1][2] = rtrip3;
 }
 
+void printSnowBall(){
+	BSP_LCD_SetTextColor(SBCLR);
+	BSP_LCD_FillCircle(touch.x, touch.y, sizeSB++);
+}
+
+
+

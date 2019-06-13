@@ -13,7 +13,7 @@ typedef uint32_t tcolour;
 
 
 double toDegrees(double rad);
-void analogClock(tcolour colour, tside side);
+void analogClock(tcolour colour, tside side, _Bool ai);
 void printCountdown(double sec, tcolour colour, tside side);
 void printClock(tside side);
 void resetClocks();

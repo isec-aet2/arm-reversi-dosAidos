@@ -57,6 +57,7 @@ tcolour touchClr;
 int iClr = 0;
 tbody bodyDisp[] = {FEMALE,MALE};
 tside thisSide = 0;
+int sizeSB;
 
 Game game;
 //game.totalTime = 0;
@@ -205,6 +206,7 @@ int main(){
 				printInfo(HEAD,NEWMOVE);
 				printFlag = 0;
 			}
+			printInfo(!HEAD,!NEWMOVE);
 			if(game.player==iAI || ai2Flag){
 				touch = chooseMove(avail,remain,targets,game.player);
 				playAI(touch);

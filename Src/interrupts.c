@@ -17,14 +17,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == GPIO_PIN_13){
-		BSP_LED_Toggle(LED_GREEN);
 		BSP_TS_GetState(&TS_State);
 		if(TS_State.touchDetected){
 			tsFlag = 1;
 		}
 	}
 	if(GPIO_Pin == GPIO_PIN_0){
-		BSP_LED_Toggle(LED_RED);
 		pbFlag = 1;
 	}
 }
@@ -101,18 +99,20 @@ _Bool checkGameTS(){
 		tsFlag = 0;
 		touch.x = toIndexX(TS_State.touchX[0]);
 		touch.y = toIndexY(TS_State.touchY[0]);
-		touchClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
+		//touchClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
 			if(touch.x!=prev.x || touch.y!=prev.y){
-				printBoard();
+				deselectSq(prev);
+				printFrame();
 				selectSq(touch);
 				dsFlag = 1;
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
-		}else if(touchClr==pieceClr[PINK] || touchClr==pieceClr[BLUE] || touchClr==DANGERCLR || touchClr==CLCKBKG || touchClr==CLCKFRAME){
-			resetClocks();
 		}
+//		}else if(touchClr==pieceClr[PINK] || touchClr==pieceClr[BLUE] || touchClr==DANGERCLR || touchClr==CLCKBKG || touchClr==CLCKFRAME){
+//			resetClocks();
+//		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		printBoard();
@@ -127,9 +127,14 @@ _Bool checkGameTS(){
 void checkEndTS(){
 	if(tsFlag){
 		tsFlag = 0;
+		touch.x = TS_State.touchX[0];
+		touch.y = TS_State.touchY[0];
+		printSnowBall();
+		dsFlag = 1;
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		dsFlag = 0;
+		BSP_LCD_Clear(BCKGND);
 		mode = MENU;
 		menuSize = ORIGOPT;
 		printFlag = 1;
@@ -163,6 +168,10 @@ void checkTIM7(){
 
 void checkTIM6(){
 	if(clockFlag && mode==GAME){
+		if(game.player==iAI || ai2Flag){
+			analogClock(pieceClr[game.player+AVAILDIF],(tside)game.player,!DANGER);
+			return;
+		}
 		clockAn += 0.01;
 		clockFlag = 0;
 		if(clockAn==0){
@@ -174,7 +183,7 @@ void checkTIM6(){
 		}else if(clockAn<20){
 			if(redFlag){
 				redFlag = 0;
-				analogClock(DANGERCLR,(tside)game.player);
+				analogClock(DANGERCLR,(tside)game.player,DANGER);
 			}
 			printCountdown(clockAn,DANGERCLR,(tside)game.player);
 		}else{
@@ -182,6 +191,7 @@ void checkTIM6(){
 				game.nTimeOut[game.player]++;
 			}else{
 				endGame(!game.player);
+				return;
 			}
 			swapPlayer();
 		}
