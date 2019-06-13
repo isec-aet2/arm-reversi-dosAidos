@@ -84,14 +84,11 @@ void checkMenuTS(){
 			case 1:
 				aiFlag = 0;
 				ai2Flag = 0;
+				iAI = -1;
 				break;
 			case 2:
 				aiFlag = 1;
 				ai2Flag = 1;
-				BSP_LCD_Clear(BCKGND);
-				touch = chooseMove(avail,remain,targets,game.player);
-				playAI(touch);
-				play();
 			}
 		}else{
 			printBody(pieceClr[!iClr], thisSide, bodyDisp[thisSide]);
@@ -104,29 +101,27 @@ _Bool checkGameTS(){
 		tsFlag = 0;
 		touch.x = toIndexX(TS_State.touchX[0]);
 		touch.y = toIndexY(TS_State.touchY[0]);
-		//touchClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
+		touchClr = BSP_LCD_ReadPixel(TS_State.touchX[0], TS_State.touchY[0]);
 		if(touch.x>=0 && touch.y>=0 && touch.x<ROWS && touch.y<COLS){
 			if(touch.x!=prev.x || touch.y!=prev.y){
-				deselectSq(prev);
-				printFrame();
+				printBoard();
 				selectSq(touch);
 				dsFlag = 1;
 				prev.x = touch.x;
 				prev.y = touch.y;
 			}
+		}else if(touchClr==pieceClr[PINK] || touchClr==pieceClr[BLUE] || touchClr==DANGERCLR || touchClr==CLCKBKG || touchClr==CLCKFRAME){
+			resetClocks();
 		}
-//		}else if(touchClr==pieceClr[PINK] || touchClr==pieceClr[BLUE] || touchClr==DANGERCLR || touchClr==CLCKBKG || touchClr==CLCKFRAME){
-//			resetClocks();
-//		}
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		printBoard();
 		dsFlag = 0;
 		if(board[touch.x][touch.y]==game.player+AVAILDIF){
-			return 1;
+			return TRUE;
 		}
 	}
-	return 0;
+	return FALSE;
 }
 
 void checkEndTS(){
@@ -161,7 +156,7 @@ void checkTIM7(){
 		}
 		if(mode==GAME){
 			fillInfo();
-			printInfo(0,0);
+			printInfo(!HEAD,!NEWMOVE);
 		}
 	}
 }
@@ -206,4 +201,3 @@ _Bool checkPB(){
 	}
 	return FALSE;
 }
-

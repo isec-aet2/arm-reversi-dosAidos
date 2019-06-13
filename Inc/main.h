@@ -118,7 +118,7 @@ void configs();
 #define INFOXBORDER				30
 #define INFOYBORDER				20
 #define NINFO1					 1
-#define NINFO2					 4
+#define NINFO2					 5
 #define YINFO					  (CLCKCNTRY+CLCKRAD)
 #define LINFOT					  INFOXBORDER
 #define RINFOT					  (LCDXCNTR+SQSIZE*COLS/2+RINFO)
@@ -188,10 +188,9 @@ void configs();
 #define TRIP3Y					  (BODYY+BODYHEIGHT)
 #define DECAP					10
 
-#define CONVERT					 1
 #define HEAD					 1
 #define NEWMOVE					 1
-
+#define CONVERT					 1
 
 typedef struct _game{
 	//Time totalTime;
@@ -228,15 +227,13 @@ extern uint32_t convertedValue;
 extern long int degrees;
 extern char temp[STRSIZE];
 extern tmode mode;
-extern _Bool ai;
-extern _Bool ai2;
 extern _Bool printFlag;
 extern Coord touch;
 extern Coord prev;
 extern tside thisSide;
 extern tbody thisBody;
 extern int iClr;
-extern _Bool iAI;
+extern int iAI;
 extern _Bool aiFlag;
 extern _Bool ai2Flag;
 extern int btn;

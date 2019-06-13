@@ -22,7 +22,7 @@ void resetBoard(){
 			}
 		}
 	}
-	checkAllMoves(game.player,avail);
+	remain = checkAllMoves(game.player,avail);
 }
 
 void printFrame(){
@@ -79,10 +79,11 @@ void fillInfo(){
 	Time pTime[] = {toTime(game.playerTime[PINK]),toTime(game.playerTime[BLUE])};
 	sprintf(info1[0], "%s\t %.2d : %.2d : %.2d", head1[0], tTime.hour, tTime.min, tTime.sec);
 	for(int i=PINK; i<=BLUE; i++){
-		sprintf(info2[0][i], "%.2d : %.2d", pTime[i].min, pTime[i].sec);
-		sprintf(info2[1][i], "%d", game.score[i]);
-		sprintf(info2[2][i], "%d", game.nPossMoves[i]);
-		sprintf(info2[3][i], "%d", TIMEOUTMAX-game.nTimeOut[i]);
+		strcpy(info2[0][i], game.playerName[i]);
+		sprintf(info2[1][i], "%.2d : %.2d", pTime[i].min, pTime[i].sec);
+		sprintf(info2[2][i], "%d", game.score[i]);
+		sprintf(info2[3][i], "%d", game.nPossMoves[i]);
+		sprintf(info2[4][i], "%d", TIMEOUTMAX-game.nTimeOut[i]);
 	}
 }
 
@@ -93,7 +94,7 @@ void printInfo(_Bool headFlag, _Bool newMoveFlag){
 	for(int i=NINFO1; i>0; i--){
 		BSP_LCD_DisplayStringAt(0, LCDYMAX-INFOYBORDER*i, (uint8_t *)info1[i-1], CENTER_MODE);
 	}
-	for(int i=0; i<NINFO2; i++){
+	for(int i=1; i<NINFO2; i++){
 		for(int j=LEFT; j<=RIGHT; j++){
 			if(headFlag){
 				BSP_LCD_DisplayStringAt(infotX[j], YINFO+(i+1)*(LCDYMAX-YINFO)/(NINFO2+1), (uint8_t *)head2[i], LEFT_MODE);
@@ -119,21 +120,25 @@ void selectSq(Coord sq){
 
 void deselectSq(Coord sq){
 	BSP_LCD_SetTextColor(BOARDCLR);
-	BSP_LCD_FillRect(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF, SQSIZE+SELECTEDDIF);
+	BSP_LCD_FillRect(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)-SELECTEDDIF/2, SQSIZE+SELECTEDDIF+1, SQSIZE+SELECTEDDIF+1);
 	BSP_LCD_SetTextColor(GRIDCLR);
-	BSP_LCD_DrawLine(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y), toPosX(sq.x)+SELECTEDDIF/2, toPosY(sq.y));
-	BSP_LCD_DrawLine(toPosX(sq.x), toPosY(sq.y)-SELECTEDDIF/2, toPosX(sq.x), toPosY(sq.y)+SELECTEDDIF/2);
-	BSP_LCD_DrawLine(toPosX(sq.x)+SQSIZE+SELECTEDDIF/2, toPosY(sq.y)+SQSIZE, toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y)+SQSIZE);
-	BSP_LCD_DrawLine(toPosX(sq.x)+SQSIZE, toPosY(sq.y)+SQSIZE+SELECTEDDIF/2, toPosX(sq.x)+SQSIZE, toPosY(sq.y)-SELECTEDDIF/2);
-	if(board[sq.x][sq.y]!=EMPTY){
+	BSP_LCD_DrawLine(toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y), toPosX(sq.x+1)+SELECTEDDIF/2, toPosY(sq.y));
+	BSP_LCD_DrawLine(toPosX(sq.x), toPosY(sq.y)-SELECTEDDIF/2, toPosX(sq.x), toPosY(sq.y+1)+SELECTEDDIF/2);
+	BSP_LCD_DrawLine(toPosX(sq.x+1)+SELECTEDDIF/2, toPosY(sq.y+1), toPosX(sq.x)-SELECTEDDIF/2, toPosY(sq.y+1));
+	BSP_LCD_DrawLine(toPosX(sq.x+1), toPosY(sq.y+1)+SELECTEDDIF/2, toPosX(sq.x+1), toPosY(sq.y)-SELECTEDDIF/2);
+	if(board[sq.x][sq.y]<=BLUE){
 		BSP_LCD_SetTextColor(pieceClr[board[sq.x][sq.y]]);
 		BSP_LCD_FillCircle(toPosX(sq.x)+SQSIZE/2.0, toPosY(sq.y)+SQSIZE/2.0, CIRRAD);
+	}else if(board[sq.x][sq.y]<=BLUEAVAIL){
+		BSP_LCD_SetTextColor(pieceClr[board[sq.x][sq.y]]);
+		BSP_LCD_DrawCircle(toPosX(sq.x)+SQSIZE/2.0, toPosY(sq.y)+SQSIZE/2.0, CIRRAD);
 	}
+	printFrame();
 }
 
-void setMove(){
+void setMove(Coord move){
 	BSP_LCD_SetTextColor(pieceClr[game.player+AVAILDIF]);
-	BSP_LCD_FillCircle(toPosX(touch.x)+SQSIZE/2, toPosY(touch.y)+SQSIZE/2, CIRRAD);
+	BSP_LCD_FillCircle(toPosX(move.x)+SQSIZE/2, toPosY(move.y)+SQSIZE/2, CIRRAD);
 }
 
 void convertColour(Coord enemy){

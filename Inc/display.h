@@ -15,13 +15,14 @@ void printBoard();
 void selectSq(Coord sq);
 void deselectSq(Coord sq);
 void colourButton(int btn, int btnClr, int txtClr);
-void setMove();
 void convertColour(Coord enemy);
+void setMove(Coord move);
 void printMenu();
 void fillInfo();
-void printInfo(_Bool templFlag, _Bool newMoveFlag);
+void printInfo(_Bool headFlag, _Bool newMoveFlag);
 pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
 void printBody(tcolour colour, tside side, tbody body);
 void initSkirt();
 
 #endif
+

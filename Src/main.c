@@ -1,4 +1,3 @@
-
 #include "main.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -9,6 +8,7 @@
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
 #include "stm32f7xx_hal.h"
+//#include "fatfs.h"
 
 
 #include "configs.h"
@@ -37,6 +37,9 @@ int personFlag = 0;
 int menuSize = ORIGOPT;
 TS_StateTypeDef TS_State;
 tmode mode = MENU;
+int iAI;
+_Bool aiFlag;
+_Bool ai2Flag;
 _Bool printFlag = 1;
 tcontent board[ROWS][COLS];
 Coord touch;
@@ -52,10 +55,6 @@ double clockAn = 0;
 _Bool redFlag = 0;
 tcolour touchClr;
 int iClr = 0;
-_Bool iAI;
-_Bool aiFlag;
-_Bool ai2Flag;
-_Bool playFlag = 0;
 tbody bodyDisp[] = {FEMALE,MALE};
 tside thisSide = 0;
 
@@ -78,7 +77,7 @@ int infoX[] = {LINFO,RINFO};
 char info1[NINFO1][STRSIZE];
 char info2[NINFO2][2][STRSIZE];
 char head1[NINFO1][STRSIZE] = {"Game's total time:"};
-char head2[NINFO2][STRSIZE] = {"Total time:","Score:","Possible moves:","Timeouts left:"};
+char head2[NINFO2][STRSIZE] = {"Player:","Total time:","Score:","Possible moves:","Timeouts left:"};
 
 Point ltrip1;
 Point ltrip2;
@@ -97,9 +96,42 @@ void debug(char * text){
 	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t *)text, RIGHT_MODE);
 }
 
-void configs(){
-	initSkirt();
+//void writeSD (){
+//	fillInfo();
+//	unsigned int nBytes;
+//	char info[STRSIZE*(NINFO1*2+NINFO2*2*2)];
+//	info[0] = 0;
+//	char endl13[] = {13,0};
+//	char endl10[] = {10,0};
+//	for(int i=0; i<NINFO1; i++){
+//		strcat(info,head1[i]);
+//		strcat(info,info1[i]);
+//		strcat(info,endl13);
+//		strcat(info,endl10);
+//	}
+//	for(int i=0; i<NINFO2; i++){
+//		for(int j=PINK; i<=BLUE; j++){
+//			strcat(info,head2[i]);
+//			strcat(info,info2[j][i]);
+//			strcat(info,endl13);
+//			strcat(info,endl10);
+//		}
+//	}
+//	if(f_mount (&SDFatFS, SDPath, 0)!=FR_OK){
+//	   Error_Handler();
+//	}
+//	HAL_Delay(100);
+//	if(f_open (&SDFile, "end.txt", FA_OPEN_APPEND | FA_WRITE )!=FR_OK){
+//	   Error_Handler();
+//	}
+//	HAL_Delay(100);
+//	if(f_write (&SDFile, info, strlen(info), &nBytes)!=FR_OK){
+//	   Error_Handler();
+//	}
+//	f_close (&SDFile);
+//}
 
+void configs(){
 	srand(time(NULL));
 
 	SCB_EnableICache();
@@ -118,6 +150,7 @@ void configs(){
 	MX_TIM6_Init();
 	MX_TIM7_Init();
 	MX_ADC1_Init();
+	//MX_FATFS_Init();
 
 	BSP_LCD_Init();
 	BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER_BACKGROUND,LCD_FB_START_ADDRESS);
@@ -134,6 +167,8 @@ void configs(){
 
 	BSP_LED_Init(LED_RED);
 	BSP_LED_Init(LED_GREEN);
+
+	initSkirt();
 
 	configFlag = 1;
 }
@@ -162,18 +197,21 @@ int main(){
 		case GAME:
 			if(printFlag){
 				BSP_LCD_Clear(BCKGND);
+				initGame();
 				resetBoard();
 				printBoard();
 				resetClocks();
-				initGame();
 				fillInfo();
 				printInfo(HEAD,NEWMOVE);
 				printFlag = 0;
 			}
-//			if(ai2 || player==iAI){
-//				play();
-//			}
-			checkGameTS();
+			if(game.player==iAI || ai2Flag){
+				touch = chooseMove(avail,remain,targets,game.player);
+				playAI(touch);
+			}else{
+				playNI();
+			}
+			break;
 		case END:
 			checkEndTS();
 		case NONE:

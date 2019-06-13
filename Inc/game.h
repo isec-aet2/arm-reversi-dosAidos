@@ -11,6 +11,7 @@ typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
 
 void resetBoard();
 void playAI(Coord move);
+void playNI();
 void play();
 void swapPlayer();
 void initGame();

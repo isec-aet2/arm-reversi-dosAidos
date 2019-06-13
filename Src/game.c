@@ -41,45 +41,39 @@ void playAI(Coord move){
 		printInfo(0,0);
 		if(pass.x!=move.x){
 			if(!(rand()%3)){
+				deselectSq(pass);
 				pass.x += difX;
 			}
 		}
 		if(pass.y!=move.y){
 			if(!(rand()%3)){
+				deselectSq(pass);
 				pass.y += difY;
 			}
 		}
-		printBoard();
 		selectSq(pass);
 		HAL_Delay(AIDELAY);
 	}
+	deselectSq(pass);
+	touch = pass;
+	play();
 }
 
 void playNI(){
 	if(checkGameTS()){
-		board[touch.x][touch.y] = game.player;
+		play();
 	}
 }
 
 void play(){
-	checkTIM6();
-	checkTIM7();
-	if(checkPB()){
-		//return;
-	}
 	board[touch.x][touch.y] = game.player;
-	setMove();
+	setMove(touch);
 	resetArray(targets,8);
 	findTargets(touch,game.player,targets);
 	for(int i=0; targets[i].x!=NOCOORD; i++){
-		findEnemies(targets[i],touch,game.player,1);
+		findEnemies(targets[i],touch,game.player,CONVERT);
 	}
 	swapPlayer();
-	if((aiFlag && game.player==iAI) || ai2Flag){
-		touch = chooseMove(avail,remain,targets,game.player);
-		playAI(touch);
-		play();
-	}
 }
 
 void initGame(){

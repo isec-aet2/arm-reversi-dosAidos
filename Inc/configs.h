@@ -7,6 +7,8 @@
 #include "stm32f769i_discovery.h"
 #include "stm32f769i_discovery_lcd.h"
 #include "stm32f769i_discovery_ts.h"
+#include "stm32f7xx_hal.h"
+//#include "fatfs.h"
 
 
 void SystemClock_Config(void);

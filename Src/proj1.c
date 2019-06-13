@@ -1,4 +1,3 @@
-
 #include "stdlib.h"
 #include "proj1.h"
 #include "main.h"
@@ -152,6 +151,3 @@ _Bool checkAvail(Coord move, Coord avail[]){
     }
     return FALSE;
 }
-
-
-
