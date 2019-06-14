@@ -211,5 +211,30 @@ void printSnowBall(){
 	BSP_LCD_FillCircle(touch.x, touch.y, sizeSB++);
 }
 
+void printEndMode(tcontent winner){
+	mode = END;
+	BSP_LCD_Clear(pieceClr[winner]);
+	BSP_LCD_SetBackColor(pieceClr[winner]);
+	BSP_LCD_SetFont(&ENDFONT);
+	BSP_LCD_SetTextColor(pieceClr[winner+AVAILDIF]);
+	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t*)"GAME OVER", CENTER_MODE);
+	sizeSB = 1;
+}
 
+void printGameMode(){
+	BSP_LCD_Clear(BCKGND);
+	initGame();
+	resetBoard();
+	printBoard();
+	resetClocks();
+	fillInfo();
+	printInfo(HEAD,NEWMOVE);
+}
+
+void printMenuMode(){
+	BSP_LCD_Clear(BCKGND);
+	printMenu();
+	printBody(PINKCLR, LEFT, FEMALE);
+	printBody(BLUECLR, RIGHT, MALE);
+}
 

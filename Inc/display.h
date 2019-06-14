@@ -6,6 +6,10 @@
 typedef enum _side {LEFT, RIGHT} tside;
 typedef enum _body {FEMALE,MALE} tbody;
 #endif
+#ifndef _TC_
+#define _TC_
+typedef enum _content {PINK,BLUE,PINKAVAIL,BLUEAVAIL,EMPTY} tcontent;
+#endif
 
 #ifndef _DISP_
 #define _DISP_
@@ -24,6 +28,9 @@ pPoint createTimeLeft(pPoint timeLeft, int polp4x, int polp4y);
 void printBody(tcolour colour, tside side, tbody body);
 void initSkirt();
 void printSnowBall();
+void printEndMode(tcontent winner);
+void printGameMode();
+void printMenuMode();
 
 #endif
 

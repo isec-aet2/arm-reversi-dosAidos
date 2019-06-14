@@ -12,15 +12,15 @@ void swapPlayer(){
 	if(!remain){
 		remain = 0;
 		if(game.score[PINK] > game.score[BLUE]){
-			endGame(PINK);
+			printEndMode(PINK);
 		}else if(game.score[BLUE] > game.score[PINK]){
-			endGame(!game.player);
+			printEndMode(!game.player);
 		}else if(game.playerTime[PINK] < game.playerTime[BLUE]){
-			endGame(PINK);
+			printEndMode(PINK);
 		}else if(game.playerTime[BLUE] < game.playerTime[PINK]){
-			endGame(BLUE);
+			printEndMode(BLUE);
 		}else{
-			endGame(!game.player);
+			printEndMode(!game.player);
 		}
 	}
 }
@@ -85,14 +85,4 @@ void initGame(){
 	game.nPossMoves[PINK] = game.nPossMoves[BLUE] = 4;
 	game.nTimeOut[PINK] = game.nTimeOut[BLUE] = 0;
 	game.player = rand()%2;
-}
-
-void endGame(tcontent winner){
-	mode = END;
-	BSP_LCD_Clear(pieceClr[winner]);
-	BSP_LCD_SetBackColor(pieceClr[winner]);
-	BSP_LCD_SetFont(&ENDFONT);
-	BSP_LCD_SetTextColor(pieceClr[winner+AVAILDIF]);
-	BSP_LCD_DisplayStringAt(0, LCDYMAX/2, (uint8_t*)"GAME OVER", CENTER_MODE);
-	sizeSB = 1;
 }

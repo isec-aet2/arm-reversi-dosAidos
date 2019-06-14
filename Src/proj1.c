@@ -19,7 +19,7 @@ int chooseBest(int possMoves[], int nAvail){
 		}
 	}
 	int r = rand()%ibm;
-	return possMoves[bestMoves[r]];
+	return bestMoves[r];
 }
 
 Coord chooseMove(Coord avail[], int nAvail, Coord targets[], _Bool player){

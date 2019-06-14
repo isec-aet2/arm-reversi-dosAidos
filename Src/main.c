@@ -171,6 +171,8 @@ void configs(){
 
 	initSkirt();
 
+	printMenuMode();
+
 	configFlag = 1;
 }
 
@@ -186,26 +188,9 @@ int main(){
 		checkTIM7();
 		switch(mode){
 		case MENU:
-			if(printFlag){
-				BSP_LCD_Clear(BCKGND);
-				printMenu();
-				printBody(PINKCLR, LEFT, FEMALE);
-				printBody(BLUECLR, RIGHT, MALE);
-				printFlag = 0;
-			}
 			checkMenuTS();
 			break;
 		case GAME:
-			if(printFlag){
-				BSP_LCD_Clear(BCKGND);
-				initGame();
-				resetBoard();
-				printBoard();
-				resetClocks();
-				fillInfo();
-				printInfo(HEAD,NEWMOVE);
-				printFlag = 0;
-			}
 			printInfo(!HEAD,!NEWMOVE);
 			if(game.player==iAI || ai2Flag){
 				touch = chooseMove(avail,remain,targets,game.player);

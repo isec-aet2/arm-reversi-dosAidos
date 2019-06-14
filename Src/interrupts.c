@@ -88,6 +88,7 @@ void checkMenuTS(){
 				aiFlag = 1;
 				ai2Flag = 1;
 			}
+			printGameMode();
 		}else{
 			printBody(pieceClr[!iClr], thisSide, bodyDisp[thisSide]);
 		}
@@ -134,10 +135,9 @@ void checkEndTS(){
 		HAL_Delay(TOUCHDELAY);
 	}else if(dsFlag){
 		dsFlag = 0;
-		BSP_LCD_Clear(BCKGND);
 		mode = MENU;
+		printMenuMode();
 		menuSize = ORIGOPT;
-		printFlag = 1;
 	}
 }
 
@@ -190,7 +190,7 @@ void checkTIM6(){
 			if(game.nTimeOut[game.player]<TIMEOUTMAX){
 				game.nTimeOut[game.player]++;
 			}else{
-				endGame(!game.player);
+				printEndMode(!game.player);
 				return;
 			}
 			swapPlayer();
